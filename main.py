@@ -31,6 +31,8 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 # Enable intents for member events
 intents = discord.Intents.default()
 intents.members = True
+intents.messages = True
+intents.message_content = True
 
 # Create bot instance
 bot = commands.Bot(command_prefix="/", intents=intents)
@@ -47,11 +49,13 @@ async def load_cogs():
     Each cog contains a set of app_commands (slash commands).
     Currently, only the 'fun' cog is loaded.
     """
-    import cogs.fun
     import cogs.events
+    import cogs.fun
+    import cogs.reddit
 
-    await cogs.fun.setup(bot)
     await cogs.events.setup(bot)
+    await cogs.fun.setup(bot)
+    await cogs.reddit.setup(bot)
 
 
 ##########################

@@ -19,6 +19,7 @@ class Economy(commands.Cog):
         bot (commands.Bot): The main bot instance.
     """
 
+
     def __init__(self, bot):
         """
         Initialize the cog with a reference to the bot.

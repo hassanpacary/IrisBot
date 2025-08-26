@@ -12,7 +12,10 @@ Events:
 import discord
 import random
 from discord.ext import commands, tasks
+from config.regex import FUN_QUOIFEUR_REGEX, REDDIT_URL_REGEX
 from config.string_fr import ON_READY, WELCOME, STATUS
+from utils.fun_utils import reply_feur
+from utils.reddit_utils import reply_reddit
 
 
 class Events(commands.Cog):
@@ -22,6 +25,7 @@ class Events(commands.Cog):
     Attributes:
         bot (commands.Bot): The main bot instance.
     """
+
 
     def __init__(self, bot):
         """
@@ -57,9 +61,12 @@ class Events(commands.Cog):
         print(ON_READY.format(bot_name=self.bot.user.name))
         self.status_swap.start()
 
+        # Sync slash commands in the commands tree
+        await self.bot.tree.sync()
+
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: discord.Member):
         """
         Event triggered when a new member joins the server.
 
@@ -71,6 +78,37 @@ class Events(commands.Cog):
         """
         welcome_channel = member.guild.system_channel
         await welcome_channel.send(random.choice(WELCOME).format(member=member.mention))
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        """
+        Event listener that triggers whenever a message is sent in a channel or DM.
+
+        Workflow:
+            1. Ignores any message sent by the bot itself.
+            2. Checks if the message contains a Reddit URL:
+                - If found, extracts the URL and calls `reply_reddit` to handle it.
+            3. Otherwise, checks if the message matches the "quoi-feur" pattern:
+                - If matched, calls `reply_feur` to reply with the predefined response.
+            4. Other messages are ignored by this listener.
+
+        Args:
+            message (discord.Message): The message sent by a user.
+        """
+        if message.author == self.bot.user:
+            return
+
+        print(FUN_QUOIFEUR_REGEX)
+        print(message.content)
+
+        # Reddit regex URL listener
+        if REDDIT_URL_REGEX.match(message.content):
+            url = REDDIT_URL_REGEX.match(message.content).group(0)
+            await reply_reddit(self, message=message, url=url)
+
+        # Quoi - feur listener
+        elif FUN_QUOIFEUR_REGEX.match(message.content):
+            await reply_feur(message=message)
 
 
 async def setup(bot):

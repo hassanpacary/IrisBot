@@ -11,7 +11,7 @@ Commands:
 import discord
 from discord import app_commands
 from discord.ext import commands
-from config.string_fr import FEUR
+from config.string_fr import FUN_FEUR
 
 
 class Fun(commands.Cog):
@@ -21,6 +21,7 @@ class Fun(commands.Cog):
     Attributes:
         bot (commands.Bot): The main bot instance.
     """
+
 
     def __init__(self, bot):
         """
@@ -33,6 +34,7 @@ class Fun(commands.Cog):
 
 
     @app_commands.command(name="quoi", description="répond 'feur'.")
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def quoi(self, interaction: discord.Interaction):
         """
         Responds to the /quoi slash command.
@@ -43,7 +45,7 @@ class Fun(commands.Cog):
         Action:
             Sends the message stored in the QUOI variable to the user.
         """
-        await interaction.response.send_message(FEUR)
+        await interaction.response.send_message(FUN_FEUR)
 
 
 async def setup(bot):
