@@ -1,13 +1,10 @@
 """
 reddit.py
 
-Cog containing sauce commands and events for the bot.
+Cog containing reddit commands for the bot.
 
 Commands:
 - waf : retrieve all images in the post
-
-Events:
-- on_message : if message contains reddit URL, retrieve all images in the post
 """
 
 
@@ -21,7 +18,7 @@ from utils.reddit_utils import fetch_reddit_images, send_reddit_images
 
 class SauceForReddit(commands.Cog):
     """
-    Cog containing sauce commands and events for the bot.
+    Cog containing reddit commands for the bot.
 
     Attributes:
         bot (commands.Bot): The main bot instance.

@@ -1,3 +1,18 @@
+"""
+reddit_utils.py
+
+This module allows fetching images from Reddit posts and sending them to Discord.
+
+Functions:
+- fetch_reddit_images(url: str) -> list[str]:
+    Fetches all image URLs from a Reddit post.
+- reply_reddit(self, message: discord.Message, url: str):
+    Fetches images from a Reddit post and replies in Discord.
+- send_reddit_images(images: list[str], message: discord.Message = None, interaction: discord.Interaction = None):
+    Sends Reddit images in Discord in batches, either via a message or an interaction.
+"""
+
+
 import aiohttp
 import asyncpraw
 import discord

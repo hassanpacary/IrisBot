@@ -1,3 +1,13 @@
+"""
+fun_utils.py
+
+This module allows replying to Discord messages with a predefined "feur" response.
+
+Functions:
+- reply_feur(message: discord.Message):
+    Replies to a Discord message with the predefined FUN_FEUR response.
+"""
+
 import discord
 from config.string_fr import FUN_FEUR
 

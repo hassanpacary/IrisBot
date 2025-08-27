@@ -33,6 +33,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.messages = True
 intents.message_content = True
+intents.voice_states = True
 
 # Create bot instance
 bot = commands.Bot(command_prefix="/", intents=intents)
@@ -52,10 +53,12 @@ async def load_cogs():
     import cogs.events
     import cogs.fun
     import cogs.reddit
+    import cogs.vocal
 
     await cogs.events.setup(bot)
     await cogs.fun.setup(bot)
     await cogs.reddit.setup(bot)
+    await cogs.vocal.setup(bot)
 
 
 ##########################

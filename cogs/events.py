@@ -5,7 +5,8 @@ Cog containing events listener of the bot.
 
 Events:
 - on_ready : Event triggered when the bot is ready and connected to Discord.
-- on_member_join : vent triggered when a new member joins the server.
+- on_member_join : Event triggered when a new member joins the server.
+- on_message : Event triggered when a message is sent.
 """
 
 
@@ -16,6 +17,7 @@ from config.regex import FUN_QUOIFEUR_REGEX, REDDIT_URL_REGEX
 from config.string_fr import ON_READY, WELCOME, STATUS
 from utils.fun_utils import reply_feur
 from utils.reddit_utils import reply_reddit
+from utils.vocal_utils import text_to_speech
 
 
 class Events(commands.Cog):
@@ -79,6 +81,7 @@ class Events(commands.Cog):
         welcome_channel = member.guild.system_channel
         await welcome_channel.send(random.choice(WELCOME).format(member=member.mention))
 
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """
@@ -88,9 +91,11 @@ class Events(commands.Cog):
             1. Ignores any message sent by the bot itself.
             2. Checks if the message contains a Reddit URL:
                 - If found, extracts the URL and calls `reply_reddit` to handle it.
-            3. Otherwise, checks if the message matches the "quoi-feur" pattern:
+            3. Checks if the message matches the "quoi-feur" pattern:
                 - If matched, calls `reply_feur` to reply with the predefined response.
-            4. Other messages are ignored by this listener.
+            4. Check if the message is send in the vocal channel and if Iris is in vocal
+                - If matched, calls text_to_speech for TTS
+            5. Other messages are ignored by this listener.
 
         Args:
             message (discord.Message): The message sent by a user.
@@ -98,8 +103,8 @@ class Events(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        print(FUN_QUOIFEUR_REGEX)
-        print(message.content)
+        message_author_channel = message.author.voice.channel
+        bot_voice_client = discord.utils.get(self.bot.voice_clients, guild=message.guild)
 
         # Reddit regex URL listener
         if REDDIT_URL_REGEX.match(message.content):
@@ -109,6 +114,10 @@ class Events(commands.Cog):
         # Quoi - feur listener
         elif FUN_QUOIFEUR_REGEX.match(message.content):
             await reply_feur(message=message)
+
+        # Text to speech event listener
+        elif message.author.voice and bot_voice_client and message_author_channel == bot_voice_client.channel and message.channel.id == 594583967554994178:
+            await text_to_speech(self, message=message)
 
 
 async def setup(bot):
