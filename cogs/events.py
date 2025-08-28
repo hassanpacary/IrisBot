@@ -108,8 +108,7 @@ class Events(commands.Cog):
 
         # Reddit regex URL listener
         if REDDIT_URL_REGEX.match(message.content):
-            url = REDDIT_URL_REGEX.match(message.content).group(0)
-            await reply_reddit(self, message=message, url=url)
+            await reply_reddit(self, message=message, url=REDDIT_URL_REGEX.match(message.content).group(0))
 
         # Quoi - feur listener
         elif FUN_QUOIFEUR_REGEX.match(message.content):

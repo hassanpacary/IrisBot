@@ -13,7 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 from config.regex import REDDIT_URL_REGEX
 from config.string_fr import REDDIT_RESPONSE_MESSAGE, REDDIT_WRONG_URL
-from utils.reddit_utils import fetch_reddit_images, send_reddit_images
+from utils.reddit_utils import fetch_reddit_medias, send_reddit_medias
 
 
 class SauceForReddit(commands.Cog):
@@ -52,15 +52,16 @@ class SauceForReddit(commands.Cog):
             interaction (discord.Interaction): The Discord interaction that triggered the command.
             url (str): The Reddit post URL provided by the user.
         """
+
         if not REDDIT_URL_REGEX.match(url):
             await interaction.response.send_message(REDDIT_WRONG_URL, ephemeral=True)
             return
-        images = await fetch_reddit_images(url=url)
+        medias = await fetch_reddit_medias(url=url)
 
-        await interaction.response.send_message(REDDIT_RESPONSE_MESSAGE.format(image_count=len(images)))
+        await interaction.response.send_message(REDDIT_RESPONSE_MESSAGE.format(medias_count=len(medias)))
 
-        if images:
-            await send_reddit_images(images=images, interaction=interaction)
+        if medias:
+            await send_reddit_medias(medias=medias, interaction=interaction)
 
 
 async def setup(bot):
