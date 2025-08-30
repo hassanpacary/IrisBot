@@ -1,0 +1,50 @@
+{
+  "command": {
+    "quoi": {
+      "slash_command": "quoi",
+      "description": "répond 'feur'."
+    },
+    "join_vocal": {
+      "slash_command": "join",
+      "description": "Iris rejoint le salon vocal."
+    },
+    "disconnect_vocal": {
+      "slash_command": "disconnect",
+      "description": "Déconnecte Iris du salon vocal."
+    },
+    "waf": {
+      "slash_command": "waf",
+      "description": "Toutes tes vilaines images."
+    }
+  },
+  "event": {
+    "status_activity_list": {
+      "game":["GoogooBabies Game", "Ethorn"],
+      "watching":["Zero no Tsukaima", "Konosuba"]
+    },
+    "welcome_new_user": ["Konnichiwassup {member} !", "{member} domo :woman_bowing:"]
+  },
+  "exception": {
+    "dotenv_data_exception": "Erreur lors de la récupération des variables d'environnement.\n"
+  },
+  "fun": {
+    "reply_feur": "feur"
+  },
+  "log": {
+    "on_disconnected": "{bot_name} disconected from discord.",
+    "on_ready": "Bot connecté en tant que {bot_name}.",
+    "on_resumed": "Bot reprend sous le nom de {bot_name}."
+  },
+  "reddit": {
+    "reply_message_with_medias_count": "J'ai trouvé {medias_count} medias sur ton post :pig:",
+    "wrong_url": "Fais au moins l'effort de me fournir une bonne URL !"
+  },
+  "vocal": {
+    "bot_already_connected": "Je suis déjà dans le vocal !",
+    "bot_disconnected_with_success": "Je suis déconnectée !",
+    "bot_change_channel": "J'ai quitter les autres pour te rejoindre !",
+    "bot_connect_with_success": "Je suis connectée !",
+    "bot_is_not_connected": "Je suis dans aucun salon vocal !",
+    "user_not_connected": "Tu n'es dans aucun salon vocal !"
+  }
+}

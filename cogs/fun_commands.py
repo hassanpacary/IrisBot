@@ -1,5 +1,6 @@
 """
-fun.py
+fun_commands.py
+© by hassanpacary
 
 Cog containing fun slash commands for the bot.
 
@@ -7,21 +8,26 @@ Commands:
 - /quoi : replies with a predefined message (FEUR)
 """
 
-
+# --- Imports ---
 import discord
 from discord import app_commands
 from discord.ext import commands
-from config.string_fr import FUN_FEUR
+
+# --- Bot modules ---
+from functions.functions import load_json
+
+# Load config data from json files
+config = load_json("config.json")
+string = load_json(f"string_config_{config['config']['langage']}.json")
 
 
-class Fun(commands.Cog):
+class FunCommands(commands.Cog):
     """
     Cog containing fun commands for the bot.
 
     Attributes:
         bot (commands.Bot): The main bot instance.
     """
-
 
     def __init__(self, bot):
         """
@@ -32,8 +38,8 @@ class Fun(commands.Cog):
         """
         self.bot = bot
 
-
-    @app_commands.command(name="quoi", description="répond 'feur'.")
+    @app_commands.command(name=string['command']['quoi']['slash_command'],
+                          description=string['command']['quoi']['description'])
     @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def quoi(self, interaction: discord.Interaction):
         """
@@ -45,7 +51,7 @@ class Fun(commands.Cog):
         Action:
             Sends the message stored in the QUOI variable to the user.
         """
-        await interaction.response.send_message(FUN_FEUR)
+        await interaction.response.send_message(string['fun']['reply_feur'])
 
 
 async def setup(bot):
@@ -55,4 +61,4 @@ async def setup(bot):
     Args:
         bot (commands.Bot): The bot instance to which the cog will be added.
     """
-    await bot.add_cog(Fun(bot))
+    await bot.add_cog(FunCommands(bot))

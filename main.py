@@ -1,34 +1,32 @@
 """
 main.py
+© by hassanpacary
 
-Entry point for the Discord bot.
-
-Main responsibilities:
-- Load the bot token from a .env file
-- Initialize the bot with the required intents
-- Define events (on_ready, on_member_join)
-- Load cogs containing app_commands (slash commands)
-- Start the bot
-
-Structure:
-- EVENTS: handle Discord events
-- LOAD_APP_COMMANDS: load cogs
-- MAIN: launch the bot
+Entry point of Irisbot.
 """
 
-
+# --- Imports ---
 import asyncio
+import datetime
+
 import discord
+import logging
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
 
+# Load environment variables from dotenv file
+try:
+    load_dotenv()
+except Exception as e:
+    logging.error(datetime.datetime.now().strftime(
+        '%d.%m.%Y %T') + ' -- Error: ' + f"Unable to load environment variables.\n" + str(e))
+    exit()
 
-# Get bot token from .env
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+# Setup logging file
+logging.basicConfig(filename='log.txt', level=logging.INFO)
 
-# Enable intents for member events
+# Enable intents flags
 intents = discord.Intents.default()
 intents.members = True
 intents.messages = True
@@ -36,7 +34,7 @@ intents.message_content = True
 intents.voice_states = True
 
 # Create bot instance
-bot = commands.Bot(command_prefix="/", intents=intents)
+bot_client = commands.Bot(command_prefix="/", intents=intents)
 
 
 #######################################
@@ -48,17 +46,16 @@ async def load_cogs():
     Load all cogs for the bot.
 
     Each cog contains a set of app_commands (slash commands).
-    Currently, only the 'fun' cog is loaded.
     """
-    import cogs.events
-    import cogs.fun
-    import cogs.reddit
-    import cogs.vocal
+    import cogs.events_listener
+    import cogs.fun_commands
+    import cogs.reddit_commands
+    import cogs.vocal_commands
 
-    await cogs.events.setup(bot)
-    await cogs.fun.setup(bot)
-    await cogs.reddit.setup(bot)
-    await cogs.vocal.setup(bot)
+    await cogs.events_listener.setup(bot_client)
+    await cogs.fun_commands.setup(bot_client)
+    await cogs.reddit_commands.setup(bot_client)
+    await cogs.vocal_commands.setup(bot_client)
 
 
 ##########################
@@ -74,7 +71,7 @@ async def main():
     2. Start the bot using the token
     """
     await load_cogs()
-    await bot.start(TOKEN)
+    await bot_client.start(os.getenv('DISCORD_TOKEN'))
 
 
 # Run the bot
