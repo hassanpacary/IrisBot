@@ -18,22 +18,39 @@
     }
   },
   "event": {
-    "status_activity_list": {
-      "game":["GoogooBabies Game", "Ethorn"],
-      "watching":["Zero no Tsukaima", "Konosuba"]
+    "status_activity": {
+      "anilist_state_informations": {
+        "episode": "episode",
+        "mean_score": "score moyen",
+        "genre": "genre"
+      },
+      "preset_activity": {
+        "game":{
+          "1": {
+            "activity_name": "GoogooBabies Game",
+            "activity_state": "En jeu..."
+          },
+          "2": {
+            "activity_name": "Ethorn",
+            "activity_state": "En construction..."
+          }
+        },
+        "watching":{
+          "1": {
+            "activity_name": "Zero no Tsukaima",
+            "activity_state": "Louise my belove"
+          },
+          "2": {
+            "activity_name": "Konosuba",
+            "activity_state": "Chunchunmaru"
+          }
+        }
+      }
     },
     "welcome_new_user": ["Konnichiwassup {member} !", "{member} domo :woman_bowing:"]
   },
-  "exception": {
-    "dotenv_data_exception": "Erreur lors de la récupération des variables d'environnement.\n"
-  },
   "fun": {
     "reply_feur": "feur"
-  },
-  "log": {
-    "on_disconnected": "{bot_name} disconected from discord.",
-    "on_ready": "Bot connecté en tant que {bot_name}.",
-    "on_resumed": "Bot reprend sous le nom de {bot_name}."
   },
   "reddit": {
     "reply_message_with_medias_count": "J'ai trouvé {medias_count} medias sur ton post :pig:",

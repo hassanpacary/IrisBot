@@ -2,14 +2,16 @@
 vocal_functions.py
 © by hassanpacary
 
-Text-to-Speech (TTS) module for Discord bot using Azure Cognitive Services.
+Useful functions for Text-to-Speech (TTS) module for Discord bot using Azure Cognitive Services.
 """
 
 # --- Imports ---
-import azure.cognitiveservices.speech as speechsdk
-import discord
 import os
 import re
+
+# --- Third party imports ---
+import azure.cognitiveservices.speech as speechsdk
+import discord
 from discord import FFmpegPCMAudio
 
 # --- bot modules ---
@@ -53,7 +55,10 @@ async def text_to_speech(self, message: discord.Message):
     audio_config = speechsdk.audio.AudioOutputConfig(filename=filename)
 
     # Synthesizer the speech and wait result
-    speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
+    speech_synthesizer = speechsdk.SpeechSynthesizer(
+        speech_config=speech_config,
+        audio_config=audio_config
+    )
     speech_synthesizer.speak_text_async(text).get()
 
     ffmpeg_path = os.path.join('tools', 'ffmpeg-8.0-essentials_build', 'bin', 'ffmpeg.exe')

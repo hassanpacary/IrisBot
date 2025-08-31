@@ -8,7 +8,7 @@ Commands:
 - /quoi : replies with a predefined message (FEUR)
 """
 
-# --- Imports ---
+# --- Third party imports ---
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -38,8 +38,10 @@ class FunCommands(commands.Cog):
         """
         self.bot = bot
 
-    @app_commands.command(name=string['command']['quoi']['slash_command'],
-                          description=string['command']['quoi']['description'])
+    @app_commands.command(
+        name=string['command']['quoi']['slash_command'],
+        description=string['command']['quoi']['description']
+    )
     @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def quoi(self, interaction: discord.Interaction):
         """
@@ -51,7 +53,13 @@ class FunCommands(commands.Cog):
         Action:
             Sends the message stored in the QUOI variable to the user.
         """
-        await interaction.response.send_message(string['fun']['reply_feur'])
+        await interaction.response.send_message(
+            string['fun']['reply_feur']
+        )
+
+        # This function processes the commands that have been registered to the bot.
+        # Without this coroutine, none of the commands will be triggered.
+        await self.bot.process_commands(interaction.message)
 
 
 async def setup(bot):

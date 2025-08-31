@@ -39,8 +39,10 @@ class VocalCommands(commands.Cog):
         """
         self.bot = bot
 
-    @app_commands.command(name=string['command']['join_vocal']['slash_command'],
-                          description=string['command']['join_vocal']['description'])
+    @app_commands.command(
+        name=string['command']['join_vocal']['slash_command'],
+        description=string['command']['join_vocal']['description']
+    )
     @app_commands.guild_only()
     async def join(self, interaction: discord.Interaction):
         """
@@ -64,24 +66,44 @@ class VocalCommands(commands.Cog):
 
         # --- User is connected in vocal channel ---
         if not user.voice or not user.voice.channel:
-            await interaction.response.send_message(string['vocal']['user_not_connected'], ephemeral=True)
+            await interaction.response.send_message(
+                string['vocal']['user_not_connected'],
+                ephemeral=True
+            )
             return
 
         # --- Bot is already connected in vocal channel ---
-        elif bot_voice_client is not None and bot_voice_client.channel == user.voice.channel:
-            await interaction.response.send_message(string['vocal']['bot_already_connected'], ephemeral=True)
+        if bot_voice_client is not None and bot_voice_client.channel == user.voice.channel:
+            await interaction.response.send_message(
+                string['vocal']['bot_already_connected'],
+                ephemeral=True
+            )
             return
 
         # --- Bot is not in the same vocal channel of the user ---
-        elif bot_voice_client is not None and bot_voice_client.channel != user.voice.channel:
+        if bot_voice_client is not None and bot_voice_client.channel != user.voice.channel:
+            await interaction.response.send_message(
+                string['vocal']['bot_change_channel'],
+                ephemeral=True
+            )
             await bot_voice_client.move_to(user.voice.channel)
-            await interaction.response.send_message(string['vocal']['bot_change_channel'], ephemeral=True)
+            return
 
+        # --- Else connect the bot in same vocal channel as the user
         await user.voice.channel.connect()
-        await interaction.response.send_message(string['vocal']['bot_connect_with_success'], ephemeral=True)
+        await interaction.response.send_message(
+            string['vocal']['bot_connect_with_success'],
+            ephemeral=True
+        )
 
-    @app_commands.command(name=string['command']['disconnect_vocal']['slash_command'],
-                          description=string['command']['disconnect_vocal']['description'])
+        # This function processes the commands that have been registered to the bot.
+        # Without this coroutine, none of the commands will be triggered.
+        await self.bot.process_commands(interaction.message)
+
+    @app_commands.command(
+        name=string['command']['disconnect_vocal']['slash_command'],
+        description=string['command']['disconnect_vocal']['description']
+    )
     @app_commands.allowed_contexts(guilds=True)
     async def disconnect(self, interaction: discord.Interaction):
         """
@@ -100,11 +122,22 @@ class VocalCommands(commands.Cog):
 
         # --- Bot is not connected ---
         if not voice_client or not voice_client.is_connected():
-            await interaction.response.send_message(string['vocal']['bot_is_not_connected'], ephemeral=True)
+            await interaction.response.send_message(
+                string['vocal']['bot_is_not_connected'],
+                ephemeral=True
+            )
             return
 
+        # --- Else disconnect the bot ---
         await voice_client.disconnect(force=True)
-        await interaction.response.send_message(string['vocal']['bot_disconnected_with_success'], ephemeral=True)
+        await interaction.response.send_message(
+            string['vocal']['bot_disconnected_with_success'],
+            ephemeral=True
+        )
+
+        # This function processes the commands that have been registered to the bot.
+        # Without this coroutine, none of the commands will be triggered.
+        await self.bot.process_commands(interaction.message)
 
 
 async def setup(bot):

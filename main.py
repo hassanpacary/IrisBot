@@ -2,26 +2,36 @@
 main.py
 © by hassanpacary
 
-Entry point of Irisbot.
+Entry point of the bot.
 """
 
 # --- Imports ---
 import asyncio
 import datetime
-
-import discord
 import logging
 import os
+import sys
+
+# --- Third party imports
+import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+
+# --- Bot modules ---
+import cogs.events_listener
+import cogs.fun_commands
+import cogs.reddit_commands
+import cogs.vocal_commands
 
 # Load environment variables from dotenv file
 try:
     load_dotenv()
-except Exception as e:
-    logging.error(datetime.datetime.now().strftime(
-        '%d.%m.%Y %T') + ' -- Error: ' + f"Unable to load environment variables.\n" + str(e))
-    exit()
+except OSError as e:
+    logging.error(
+        "%s -- Error: Unable to load environment variables.\n%s",
+        datetime.datetime.now().strftime('%d.%m.%Y %T'), e
+    )
+    sys.exit()
 
 # Setup logging file
 logging.basicConfig(filename='log.txt', level=logging.INFO)
@@ -37,27 +47,6 @@ intents.voice_states = True
 bot_client = commands.Bot(command_prefix="/", intents=intents)
 
 
-#######################################
-#          LOAD APP_COMMANDS          #
-#######################################
-
-async def load_cogs():
-    """
-    Load all cogs for the bot.
-
-    Each cog contains a set of app_commands (slash commands).
-    """
-    import cogs.events_listener
-    import cogs.fun_commands
-    import cogs.reddit_commands
-    import cogs.vocal_commands
-
-    await cogs.events_listener.setup(bot_client)
-    await cogs.fun_commands.setup(bot_client)
-    await cogs.reddit_commands.setup(bot_client)
-    await cogs.vocal_commands.setup(bot_client)
-
-
 ##########################
 #          MAIN          #
 ##########################
@@ -70,7 +59,11 @@ async def main():
     1. Load cogs
     2. Start the bot using the token
     """
-    await load_cogs()
+    await cogs.events_listener.setup(bot_client)
+    await cogs.fun_commands.setup(bot_client)
+    await cogs.reddit_commands.setup(bot_client)
+    await cogs.vocal_commands.setup(bot_client)
+
     await bot_client.start(os.getenv('DISCORD_TOKEN'))
 
 

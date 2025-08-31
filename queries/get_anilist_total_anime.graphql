@@ -1,0 +1,10 @@
+query {
+    Page(perPage: 1) {
+        pageInfo {
+            total
+        }
+        media(type: ANIME) {
+            id
+        }
+    }
+}

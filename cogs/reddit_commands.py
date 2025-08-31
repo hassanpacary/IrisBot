@@ -9,10 +9,12 @@ Commands:
 """
 
 # --- Imports ---
+import re
+
+# --- Third party imports ---
 import discord
 from discord import app_commands
 from discord.ext import commands
-import re
 
 # --- Bot modules ---
 from functions.reddit_functions import fetch_reddit_medias, send_reddit_medias
@@ -66,13 +68,20 @@ class RedditCommands(commands.Cog):
         if not reddit_pattern.match(url):
             await interaction.response.send_message(string['reddit']['wrong_url'], ephemeral=True)
             return
-        medias = await fetch_reddit_medias(url=url)
 
+        medias = await fetch_reddit_medias(url=url)
         await interaction.response.send_message(
             string['reddit']['reply_message_with_medias_count'].format(medias_count=len(medias)))
 
         if medias:
-            await send_reddit_medias(medias=medias, interaction=interaction)
+            await send_reddit_medias(
+                medias=medias,
+                interaction=interaction
+            )
+
+        # This function processes the commands that have been registered to the bot.
+        # Without this coroutine, none of the commands will be triggered.
+        await self.bot.process_commands(interaction.message)
 
 
 async def setup(bot):

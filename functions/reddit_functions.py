@@ -2,16 +2,20 @@
 reddit_functions.py
 © by hassanpacary
 
-This module allows fetching images from Reddit posts and sending them to Discord.
+Useful functions for fetching images from Reddit posts and sending them to Discord.
 """
 
 # --- Imports ---
+import datetime
+import io
+import logging
+import os
+import re
+
+# --- Third party imports ---
 import aiohttp
 import asyncpraw
 import discord
-import io
-import os
-import re
 import requests
 
 # --- bot modules ---
@@ -38,7 +42,7 @@ async def fetch_reddit_medias(url: str) -> list[str]:
         - Prints the submission URL and the list of collected media for debugging.
 
     Returns:
-        list[str]: A list of media URLs (images, gallery items, or videos) extracted from the submission.
+        list[str]: A list of media URLs extracted from the submission.
     """
 
     # --- Client Reddit ---
@@ -53,8 +57,20 @@ async def fetch_reddit_medias(url: str) -> list[str]:
     youtube_pattern = re.compile(regex['url_youtube']['pattern'])
 
     # --- The post contains a single image OR The post contains a YouTube video ---
-    r = requests.head(submission.url)
-    if r.headers.get('Content-Type').startswith('image/') or youtube_pattern.match(submission.url):
+    r = None
+    try:
+        r = requests.head(submission.url, timeout=5)
+    except requests.exceptions.RequestException as e:
+        logging.warning(
+            '%s -- Warning: Error during request HEAD.\n%s',
+            datetime.datetime.now().strftime('%d.%m.%Y %T'), e
+        )
+
+    if (
+            r
+            and r.headers.get('Content-Type').startswith('image/')
+            or youtube_pattern.match(submission.url)
+    ):
         medias.append(submission.url)
 
     # --- The post contains a gallery of images ---
@@ -93,10 +109,14 @@ async def send_reddit_medias(medias: list[str], message: discord.Message = None,
         # --- The media list contains only one YouTube video ---
         if youtube_pattern.match(medias[0]):
             youtube_url = medias[0]
+
+            # --- Reply to /waf command ---
             if interaction:
                 await interaction.followup.send(youtube_url)
                 return
-            elif message:
+
+            # --- Reply to a url in the channel
+            if message:
                 await message.reply(youtube_url)
                 return
 
@@ -112,7 +132,8 @@ async def send_reddit_medias(medias: list[str], message: discord.Message = None,
                     file = discord.File(io.BytesIO(data), filename=filename + '.jpg')
                     batch.append(file)
 
-                    # Send message with images in discord.TextCannel ou discord.DMChannel when batch size is up to 10
+                    # Send message with images in discord.TextCannel ou discord.DMChannel
+                    # when batch size is up to 10
                     if len(batch) == 10 or i == len(medias):
                         if interaction:
                             await interaction.followup.send(files=batch)
@@ -121,7 +142,7 @@ async def send_reddit_medias(medias: list[str], message: discord.Message = None,
                         batch = []
 
 
-async def reply_reddit(self, message: discord.Message, url: str):
+async def reply_reddit(message: discord.Message, url: str):
     """
     Fetches media from a Reddit URL and replies to the message with the content.
 
@@ -136,9 +157,10 @@ async def reply_reddit(self, message: discord.Message, url: str):
     """
     medias = await fetch_reddit_medias(url=url)
 
-    bot_msg = await message.reply(string['reddit']['reply_message_with_medias_count'].format(medias_count=len(medias)))
+    if not bool(medias):
+        return
 
-    if medias:
-        await send_reddit_medias(message=bot_msg, medias=medias)
-
-    await self.bot.process_commands(message)
+    bot_msg = await message.reply(
+        string['reddit']['reply_message_with_medias_count'].format(medias_count=len(medias))
+    )
+    await send_reddit_medias(message=bot_msg, medias=medias)
