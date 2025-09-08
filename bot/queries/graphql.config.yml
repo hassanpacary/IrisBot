@@ -1,0 +1,14 @@
+# graphql.config.yml
+# API used : Anilist GraphQL (https://graphql.anilist.co)
+
+schema:
+  - https://graphql.anilist.co
+
+documents: "./**/*.graphql"
+
+extensions:
+  endpoints:
+    anilist:
+      url: "https://graphql.anilist.co"
+      headers:
+        Content-Type: "application/json"

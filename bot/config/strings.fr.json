@@ -1,56 +1,41 @@
 {
-  "command": {
-    "quoi": {
-      "slash_command": "quoi",
-      "description": "répond 'feur'."
-    },
-    "join_vocal": {
-      "slash_command": "join",
-      "description": "Iris rejoint le salon vocal."
-    },
-    "disconnect_vocal": {
-      "slash_command": "disconnect",
-      "description": "Déconnecte Iris du salon vocal."
-    },
-    "waf": {
-      "slash_command": "waf",
-      "description": "Toutes tes vilaines images."
-    }
-  },
   "event": {
     "status_activity": {
-      "anilist_state_informations": {
+      "watching_state_informations": {
         "episode": "episode",
         "mean_score": "score moyen",
         "genre": "genre"
       },
       "preset_activity": {
-        "game":{
-          "1": {
+        "game": [
+          {
             "activity_name": "GoogooBabies Game",
             "activity_state": "En jeu..."
           },
-          "2": {
+          {
             "activity_name": "Ethorn",
             "activity_state": "En construction..."
           }
-        },
-        "watching":{
-          "1": {
+        ],
+        "watching": [
+          {
             "activity_name": "Zero no Tsukaima",
             "activity_state": "Louise my belove"
           },
-          "2": {
+          {
             "activity_name": "Konosuba",
             "activity_state": "Chunchunmaru"
           }
-        }
+        ]
       }
     },
-    "welcome_new_user": ["Konnichiwassup {member} !", "{member} domo :woman_bowing:"]
+    "welcome_new_user": [
+      "Konnichiwassup {member} !",
+      "{member} domo :woman_bowing:"
+    ]
   },
   "fun": {
-    "reply_feur": "feur"
+    "quoi": "feur"
   },
   "reddit": {
     "reply_message_with_medias_count": "J'ai trouvé {medias_count} medias sur ton post :pig:",

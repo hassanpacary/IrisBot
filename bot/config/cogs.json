@@ -1,0 +1,95 @@
+{
+  "commands": {
+    "FunCog": [
+      {
+        "name": "quoi",
+        "description": "Répond 'feur' à quoi hihi.",
+        "fields": [],
+        "callback": "quoi_logic",
+        "enabled": true
+      }
+    ],
+    "RedditCog": [
+      {
+        "name": "waf",
+        "description": "Toutes tes vilaines images.",
+        "callback": "waf_logic",
+        "fields": [
+          {
+            "name": "url",
+            "description": "url de ton lien.",
+            "type": 3,
+            "required": true
+          }
+        ],
+        "enabled": true
+      }
+    ],
+    "VocalCog": [
+      {
+        "name": "join",
+        "description": "Rejoins ton salon vocal.",
+        "callback": "join_logic",
+        "fields": [],
+        "enabled": true
+      },
+      {
+        "name": "disconnect",
+        "description": "Déconnecte le bot du salon vocal.",
+        "callback": "disconnect_logic",
+        "fields": [],
+        "enabled": true
+      }
+    ]
+  },
+  "events": {
+    "EventsCog": [
+      {
+        "name": "on_ready",
+        "callback": "on_ready_listener",
+        "enabled": true
+      },
+      {
+        "name": "on_resumed",
+        "callback": "on_resumed_listener",
+        "enabled": true
+      },
+      {
+        "name": "on_disconnect",
+        "callback": "on_disconnect_listener",
+        "enabled": true
+      },
+      {
+        "name": "on_member_join",
+        "callback": "on_member_join_listener",
+        "enabled": true
+      }
+    ],
+    "FunCog": [
+      {
+        "name": "on_message",
+        "callback": "on_message_listener",
+        "enabled": true
+      }
+    ],
+    "RedditCog": [
+      {
+        "name": "on_interaction",
+        "callback": "on_interaction_listener",
+        "enabled": true
+      },
+      {
+        "name": "on_message",
+        "callback": "on_message_listener",
+        "enabled": true
+      }
+    ],
+    "VocalCog": [
+      {
+        "name": "on_message",
+        "callback": "on_message_listener",
+        "enabled": true
+      }
+    ]
+  }
+}

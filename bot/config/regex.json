@@ -1,11 +1,11 @@
 {
-  "quoi_word": {
+  "quoi": {
     "pattern": "^(.*?(\\bquoi\\b)[^$]*)$"
   },
-  "url_reddit": {
+  "reddit": {
     "pattern": "(https?://(?:www\\.)?reddit\\.com/r/\\w+/comments/[A-Za-z0-9]+/\\S+)"
   },
-  "url_youtube": {
+  "youtube": {
     "pattern": "^((?:https?:)?\\/\\/)?((?:www|m)\\.)?((?:youtube(?:-nocookie)?\\.com|youtu.be))(\\/(?:[\\w\\-]+\\?v=|embed\\/|live\\/|v\\/)?)([\\w\\-]+)(\\S+)?$"
   }
 }
