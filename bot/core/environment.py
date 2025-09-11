@@ -32,10 +32,11 @@ def load_env() -> None:
 
     # --- dotenv file not found ---
     if not dotenv_path:
-        logging.error("No .env file found.")
+        logging.error("No .env file found")
         sys.exit(1)
 
     load_dotenv(dotenv_path)
+    logging.info("-- Environment variables loaded")
 
 
 def get_env_var(key: str, required: bool = True) -> str | None:

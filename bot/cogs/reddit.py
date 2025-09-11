@@ -5,6 +5,9 @@ reddit.py
 Cog containing reddit commands for the bot.
 """
 
+# --- Imports ---
+import logging
+
 # --- Third party imports ---
 import discord
 from discord import app_commands
@@ -57,6 +60,7 @@ class RedditCog(commands.Cog):
         pattern = REGEX['reddit']['pattern']
         if matches_pattern(pattern, message.content):
             await reply_with_medias(target=message, url=regex_search(pattern, message.content))
+            logging.info(f"-- {message.author} said: {message.content} matched with 'reddit url' pattern")
 
         await self.bot.process_commands(message)
 
@@ -97,6 +101,7 @@ class RedditCog(commands.Cog):
             return
 
         await reply_with_medias(target=interaction, url=regex_search(pattern, url))
+        logging.info(f"-- {interaction.message.author} use /waf slash command with {url} url")
 
 
 async def setup(bot):

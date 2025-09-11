@@ -4,7 +4,7 @@ anilist_service.py
 
 Service for fetching data from AniList API.
 """
-
+import logging
 # --- Imports ---
 import random
 import os
@@ -61,7 +61,10 @@ async def get_anilist_total_anime() -> int:
     # --- http request to anilist api ---
     async with aiohttp_client.session.post(api_url, json={'query': query}, headers=headers) as resp:
         data = await resp.json()
-        return data['data']['Page']['pageInfo']['total']
+        total_anime = data['data']['Page']['pageInfo']['total']
+
+        logging.info(f"--- AniList total anime entries: {total_anime}")
+        return total_anime
 
 
 async def fetch_random_anime() -> dict:
@@ -81,4 +84,7 @@ async def fetch_random_anime() -> dict:
     json_query = {'query': query, 'variables': {'page': random_page, 'perPage': per_page}}
     async with aiohttp_client.session.post(api_url, json=json_query, headers=headers) as resp:
         data = await resp.json()
-        return random.choice(data['data']['Page']['media'])
+        random_anime = random.choice(data['data']['Page']['media'])
+
+        logging.info(f"--- Random anime entries: {random_anime}")
+        return random_anime

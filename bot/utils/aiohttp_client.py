@@ -73,6 +73,12 @@ class AioHttpClient:
         try:
             resp = await self.session.get(url, params=params, **kwargs)
             resp.raise_for_status()
+
+            logging.info(
+                "GET %s - %d | params=%s",
+                url, resp.status, str(params)[:100]
+            )
+
             return resp
 
         except aiohttp.ClientError as e:
@@ -99,6 +105,12 @@ class AioHttpClient:
         try:
             resp = await self.session.post(url, json=json, data=data, **kwargs)
             resp.raise_for_status()
+
+            logging.info(
+                "POST %s - %d | json=%s | data=%s",
+                url, resp.status, str(json)[:100], str(data)[:100]
+            )
+
             return resp
 
         except aiohttp.ClientError as e:

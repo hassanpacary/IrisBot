@@ -14,7 +14,7 @@ import discord
 from discord.ext import commands, tasks
 
 # --- bot modules ---
-from bot.core.config_loader import BOT, STRINGS
+from bot.core.config_loader import BOT, STRINGS, ON_READY_BANNER
 from bot.services.activity_service import set_bot_activity, random_activity
 
 
@@ -55,19 +55,12 @@ class EventsCog(commands.Cog):
             activity_state=activity_state
         )
 
+        logging.info(f"-- Swapped activity name: {activity_name}, type: {activity_type}, state: {activity_state}")
+
     @commands.Cog.listener()
     async def on_ready(self):
         """Event triggered when the bot is ready and connected to Discord."""
-        on_ready_banner = r"""
-        ██╗      ██████╗  █████╗ ██████╗ ██╗███╗   ██╗ ██████╗      ██╗ ██████╗  ██████╗ ██╗ ██╗
-        ██║     ██╔═══██╗██╔══██╗██╔══██╗██║████╗  ██║██╔════╝     ███║██╔═████╗██╔═████╗╚═╝██╔╝
-        ██║     ██║   ██║███████║██║  ██║██║██╔██╗ ██║██║  ███╗    ╚██║██║██╔██║██║██╔██║  ██╔╝ 
-        ██║     ██║   ██║██╔══██║██║  ██║██║██║╚██╗██║██║   ██║     ██║████╔╝██║████╔╝██║ ██╔╝  
-        ███████╗╚██████╔╝██║  ██║██████╔╝██║██║ ╚████║╚██████╔╝     ██║╚██████╔╝╚██████╔╝██╔╝██╗
-        ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝      ╚═╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═╝                                                        
-        """
-
-        logging.info(on_ready_banner)
+        logging.info(ON_READY_BANNER)
         logging.info(f"-- Bot connected as {self.bot.user.name}")
 
         # Starts the background task that changes the bot's activity
@@ -95,15 +88,44 @@ class EventsCog(commands.Cog):
         """
         system_channel_id = member.guild.system_channel.id
         welcome_channel_id = BOT['channels']['welcome_channel_id']
-        welcome_message = random.choice(STRINGS['event']['welcome_new_user']).format(
+        welcome_message = random.choice(STRINGS['event']['welcome_message']).format(
             member=member.mention)
 
         # If a welcome channel has been set up, we use this one
-        if member.guild.fetch_channel(welcome_channel_id):
+        if await member.guild.fetch_channel(welcome_channel_id):
             system_channel_id = welcome_channel_id
 
         channel = await member.guild.fetch_channel(system_channel_id)
         await channel.send(welcome_message)
+        logging.info(f"-- New member joined {member.name}")
+
+    # ██████╗ ███████╗███╗   ███╗ ██████╗ ██╗   ██╗███████╗    ███╗   ███╗███████╗███╗   ███╗██████╗ ███████╗██████╗
+    # ██╔══██╗██╔════╝████╗ ████║██╔═══██╗██║   ██║██╔════╝    ████╗ ████║██╔════╝████╗ ████║██╔══██╗██╔════╝██╔══██╗
+    # ██████╔╝█████╗  ██╔████╔██║██║   ██║██║   ██║█████╗      ██╔████╔██║█████╗  ██╔████╔██║██████╔╝█████╗  ██████╔╝
+    # ██╔══██╗██╔══╝  ██║╚██╔╝██║██║   ██║╚██╗ ██╔╝██╔══╝      ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██╔══██╗██╔══╝  ██╔══██╗
+    # ██║  ██║███████╗██║ ╚═╝ ██║╚██████╔╝ ╚████╔╝ ███████╗    ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║██████╔╝███████╗██║  ██║
+    # ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝   ╚═══╝  ╚══════╝    ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+        """
+        Event triggered when a member leave the server.
+
+        Action:
+            Sends a leave message in the server's system channel.
+        """
+        system_channel_id = member.guild.system_channel.id
+        goodbye_channel_id = BOT['channels']['goodbye_channel_id']
+        goodbye_message = random.choice(STRINGS['event']['goodbye_message']).format(
+            member=member.mention)
+
+        # If a goodbye channel has been set up, we use this one
+        if await member.guild.fetch_channel(goodbye_channel_id):
+            system_channel_id = goodbye_channel_id
+
+        channel = await member.guild.fetch_channel(system_channel_id)
+        await channel.send(goodbye_message)
+        logging.info(f"-- member leave server {member.name}")
 
 
 async def setup(bot):

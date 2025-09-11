@@ -1,6 +1,6 @@
 {
   "quoi": {
-    "pattern": "^(.*?(\\bquoi\\b)[^$]*)$"
+    "pattern": "^(.*?\\bquoi\\b)\\W*$"
   },
   "reddit": {
     "pattern": "(https?://(?:www\\.)?reddit\\.com/r/\\w+/comments/[A-Za-z0-9]+/\\S+)"

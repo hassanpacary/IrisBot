@@ -6,7 +6,6 @@ Utility functions to manage Discord bot activities (presence).
 """
 
 # --- Imports ---
-import logging
 import random
 from typing import Optional
 
@@ -178,5 +177,4 @@ async def random_activity() -> tuple[str, str, str]:
         activity_name = activity['activity_name']
         activity_state = activity['activity_state']
 
-    logging.info(f"-- Activity set to : {activity_name}")
     return activity_name, activity_type, activity_state

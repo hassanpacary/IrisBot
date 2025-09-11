@@ -7,6 +7,7 @@ Useful services for send response to discord user.
 
 # --- Imports ---
 import io
+import logging
 
 # --- Third party imports ---
 import discord
@@ -49,6 +50,8 @@ async def send_images_batch(target: discord.Interaction | discord.Message, urls:
             await send_response_to_discord(target=target, files=batch)
             batch = []
 
+    logging.info(f"-- {len(urls)} images has been uploaded in reply")
+
 
 async def send_video(target: discord.Interaction | discord.Message, url, filesize_limit):
     """
@@ -71,6 +74,7 @@ async def send_video(target: discord.Interaction | discord.Message, url, filesiz
     )
 
     await send_response_to_discord(target=target, files=[file])
+    logging.info("-- Reddit video has been uploaded in reply")
 
 
 async def send_medias_response(target: discord.Interaction | discord.Message ,medias: list[str]):

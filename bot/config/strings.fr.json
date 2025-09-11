@@ -10,28 +10,31 @@
         "game": [
           {
             "activity_name": "GoogooBabies Game",
-            "activity_state": "En jeu..."
+            "activity_state": "*Slurp*"
           },
           {
             "activity_name": "Ethorn",
-            "activity_state": "En construction..."
+            "activity_state": "En maintenance depuis 2017 ..."
           }
         ],
         "watching": [
           {
             "activity_name": "Zero no Tsukaima",
-            "activity_state": "Louise my belove"
+            "activity_state": "Louise, my beloved <3"
           },
           {
-            "activity_name": "Konosuba",
-            "activity_state": "Chunchunmaru"
+            "activity_name": "KONOSUBA -God's blessing on this wonderful world! ",
+            "activity_state": "Darkness blacker than black and darker than dark, I beseech thee, combine with my deep crimson. The time of awakening cometh. Justice, fallen upon the infallible boundary, appear now as an intangible distortion! Dance, Dance, Dance! I desire for my torrent of power a destructive force: a destructive force without equal! Return all creation to cinders, and come from the abyss!"
           }
         ]
       }
     },
-    "welcome_new_user": [
-      "Konnichiwassup {member} !",
+    "welcome_message": [
+      "Konnichiwassup {member}",
       "{member} domo :woman_bowing:"
+    ],
+    "goodbye_message": [
+      "Seeyanara {member} :woman_mage:"
     ]
   },
   "fun": {
@@ -42,11 +45,11 @@
     "wrong_url": "Fais au moins l'effort de me fournir une bonne URL !"
   },
   "vocal": {
-    "bot_already_connected": "Je suis déjà dans le vocal !",
-    "bot_disconnected_with_success": "Je suis déconnectée !",
-    "bot_change_channel": "J'ai quitter les autres pour te rejoindre !",
-    "bot_connect_with_success": "Je suis connectée !",
-    "bot_is_not_connected": "Je suis dans aucun salon vocal !",
-    "user_not_connected": "Tu n'es dans aucun salon vocal !"
+    "bot_already_connected": "Je suis déjà dans le voc",
+    "bot_disconnected_with_success": "J'me déco",
+    "bot_change_channel": "T'as l'air bien seul... J'arrive",
+    "bot_connect_with_success": "Je viens d'me co",
+    "bot_is_not_connected": "Tu veux que je me déconnecte d'où au juste ?",
+    "user_not_connected": "Mais tu es OÙ ?"
   }
 }

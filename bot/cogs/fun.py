@@ -5,6 +5,9 @@ fun.py
 Cog containing fun slash commands logic.
 """
 
+# --- Imports ---
+import logging
+
 # --- Third party imports ---
 import discord
 from discord import app_commands
@@ -58,6 +61,7 @@ class FunCog(commands.Cog):
 
         if matches_pattern(pattern, message.content):
             await send_response_to_discord(target=message, content=STRINGS['fun']['quoi'])
+            logging.info(f"-- {message.author} said: {message.content} and matched with 'quoi' pattern")
 
         await self.bot.process_commands(message)
 
@@ -83,6 +87,7 @@ class FunCog(commands.Cog):
             Sends the message stored in the QUOI variable to the user.
         """
         await send_response_to_discord(target=interaction, content=STRINGS['fun']['quoi'])
+        logging.info(f"-- {interaction.message.author} use /quoi slash command")
 
 
 async def setup(bot):

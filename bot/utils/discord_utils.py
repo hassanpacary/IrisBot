@@ -7,6 +7,7 @@ Utility functions for discord.
 
 # --- Imports ---
 import io
+import logging
 
 # --- Third party imports ---
 import discord
@@ -48,6 +49,8 @@ async def send_response_to_discord(
     # --- Response to user message ---
     elif isinstance(target, discord.Message):
         await target.reply(content=content, files=files)
+
+    logging.info(f"-- Discord message has been sent: {content} with files: {files}")
 
 
 #  ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗    ███████╗██╗██╗     ███████╗

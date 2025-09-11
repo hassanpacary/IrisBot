@@ -4,6 +4,7 @@ vocal.py
 
 Cog containing vocal slash commands for the bot.
 """
+import logging
 
 # --- Imports ---
 import discord
@@ -64,6 +65,7 @@ class VocalCog(commands.Cog):
                 message_author_voice_state.channel == bot_voice_client.channel and
                 message.channel.id == vocal_text_id):
             await text_to_speech(bot_voice_client, message=message)
+            logging.info(f"-- {message.author} send {message.content} and was played by the bot in vocal channel")
 
         await self.bot.process_commands(message)
 
@@ -126,6 +128,7 @@ class VocalCog(commands.Cog):
                 ephemeral=True
             )
             await bot_voice_client.move_to(user.voice.channel)
+            logging.info(f"-- {interaction.message.author} use /join slash command. The bot has changed channel")
             return
 
         # --- Else connect the bot in same vocal channel as the user
@@ -135,6 +138,7 @@ class VocalCog(commands.Cog):
             ephemeral=True
         )
         await user.voice.channel.connect()
+        logging.info(f"-- {interaction.message.author} use /join slash command. The bot connect to channel")
 
     @app_commands.command(
         name=COMMANDS['vocal']['disconnect']['slash_command'],
@@ -173,6 +177,7 @@ class VocalCog(commands.Cog):
             ephemeral=True
         )
         await voice_client.disconnect(force=True)
+        logging.info(f"-- {interaction.message.author} use /disconnect slash command. the bot has disconnected from channel")
 
 
 async def setup(bot):
