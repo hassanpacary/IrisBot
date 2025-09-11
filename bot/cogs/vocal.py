@@ -11,6 +11,7 @@ from discord import app_commands
 from discord.ext import commands
 
 # --- Bot modules ---
+from bot.core.config_loader import BOT, COMMANDS, STRINGS
 from bot.services.azure_service import text_to_speech
 from bot.utils.discord_utils import send_response_to_discord
 
@@ -48,7 +49,7 @@ class VocalCog(commands.Cog):
                 - If matched, calls text_to_speech for TTS
             - Other messages are ignored by this listener.
         """
-        vocal_text_id = self.bot.config['bot']['channels']['textuel_vocal_channel']
+        vocal_text_id = BOT['channels']['textuel_vocal_channel']
 
         # --- Ignore bot message ---
         if message.author == self.bot.user:
@@ -73,7 +74,10 @@ class VocalCog(commands.Cog):
     # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
     #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
 
-    @app_commands.command(name="join", description="Rejoins ton salon vocal.")
+    @app_commands.command(
+        name=COMMANDS['vocal']['join']['slash_command'],
+        description=COMMANDS['vocal']['join']['description'],
+    )
     async def join_logic(self, interaction: discord.Interaction):
         """
         Command for making Iris join the user's voice channel.
@@ -91,7 +95,7 @@ class VocalCog(commands.Cog):
             - If the bot is not connected, it joins the user's voice channel and
               confirms a successful connection.
         """
-        responses_strings = self.bot.config['strings']['vocal']
+        responses_strings = STRINGS['vocal']
 
         user = interaction.user
         bot_voice_client = discord.utils.get(self.bot.voice_clients, guild=interaction.guild)
@@ -132,7 +136,10 @@ class VocalCog(commands.Cog):
         )
         await user.voice.channel.connect()
 
-    @app_commands.command(name="disconnect", description="Déconnecte le bot du salon vocal.")
+    @app_commands.command(
+        name=COMMANDS['vocal']['disconnect']['slash_command'],
+        description=COMMANDS['vocal']['disconnect']['description'],
+    )
     async def disconnect_logic(self, interaction: discord.Interaction):
         """
         Command for making Iris disconnect from the voice channel.
@@ -146,7 +153,7 @@ class VocalCog(commands.Cog):
             - If the bot is connected, disconnects from the voice channel and
               sends an ephemeral confirmation message.
         """
-        responses_strings = self.bot.config['strings']['vocal']
+        responses_strings = STRINGS['vocal']
 
         voice_client = interaction.guild.voice_client
 

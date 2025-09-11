@@ -11,9 +11,9 @@ from discord import app_commands
 from discord.ext import commands
 
 # --- Bot modules ---
+from bot.core.config_loader import COMMANDS, STRINGS, REGEX
 from bot.services.response_service import send_response_to_discord, reply_with_medias
 from bot.utils.strings_utils import matches_pattern, regex_search
-
 
 # ██████╗ ███████╗██████╗ ██████╗ ██╗████████╗    ██╗    ██╗ ██████╗ ██╗   ██╗███████╗
 # ██╔══██╗██╔════╝██╔══██╗██╔══██╗██║╚══██╔══╝    ██║    ██║██╔═══██╗██║   ██║██╔════╝
@@ -54,7 +54,7 @@ class RedditCog(commands.Cog):
             return
 
         # --- Message that contains Reddit url listener ---
-        pattern = self.bot.config['regex']['reddit']['pattern']
+        pattern = REGEX['reddit']['pattern']
         if matches_pattern(pattern, message.content):
             await reply_with_medias(target=message, url=regex_search(pattern, message.content))
 
@@ -67,7 +67,10 @@ class RedditCog(commands.Cog):
     # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
     #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
 
-    @app_commands.command(name="waf", description="Toutes tes vilaines images.")
+    @app_commands.command(
+        name=COMMANDS['reddit']['waf']['slash_command'],
+        description=COMMANDS['reddit']['waf']['description'],
+    )
     async def waf_logic(self, interaction: discord.Interaction, url: str):
         """
         Command to fetch and send media from a Reddit URL.
@@ -85,10 +88,10 @@ class RedditCog(commands.Cog):
         if not url:
             return
 
-        responses_strings = self.bot.config['strings']['reddit']
+        responses_strings = STRINGS['reddit']
 
         # --- URL not match ---
-        pattern = self.bot.config['regex']['reddit']['pattern']
+        pattern = REGEX['reddit']['pattern']
         if not matches_pattern(pattern, url):
             await send_response_to_discord(target=interaction, content=responses_strings['wrong_url'], ephemeral=True)
             return

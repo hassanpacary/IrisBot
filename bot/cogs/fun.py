@@ -11,9 +11,9 @@ from discord import app_commands
 from discord.ext import commands
 
 # --- Bot modules ---
+from bot.core.config_loader import COMMANDS, STRINGS, REGEX
 from bot.services.response_service import send_response_to_discord
 from bot.utils.strings_utils import matches_pattern
-
 
 #  ██████╗██╗   ██╗███╗   ██╗███╗   ██╗██╗   ██╗
 # ██╔════╝██║   ██║████╗  ██║████╗  ██║╚██╗ ██╔╝
@@ -54,10 +54,10 @@ class FunCog(commands.Cog):
             return
 
         # --- Message that contains 'quoi' listener ---
-        pattern = self.bot.config['regex']['quoi']['pattern']
+        pattern = REGEX['quoi']['pattern']
 
         if matches_pattern(pattern, message.content):
-            await send_response_to_discord(target=message, content=self.bot.config['strings']['fun']['quoi'])
+            await send_response_to_discord(target=message, content=STRINGS['fun']['quoi'])
 
         await self.bot.process_commands(message)
 
@@ -68,7 +68,10 @@ class FunCog(commands.Cog):
     # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
     #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
 
-    @app_commands.command(name="quoi", description="Répond 'feur' à quoi hihi.")
+    @app_commands.command(
+        name=COMMANDS['fun']['quoi']['slash_command'],
+        description=COMMANDS['fun']['quoi']['description']
+    )
     async def quoi_logic(self, interaction: discord.Interaction):
         """
         Responds to the /quoi slash command.
@@ -79,7 +82,7 @@ class FunCog(commands.Cog):
         Action:
             Sends the message stored in the QUOI variable to the user.
         """
-        await send_response_to_discord(target=interaction, content=self.bot.config['strings']['fun']['quoi'])
+        await send_response_to_discord(target=interaction, content=STRINGS['fun']['quoi'])
 
 
 async def setup(bot):

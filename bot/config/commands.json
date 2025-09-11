@@ -1,0 +1,24 @@
+{
+  "fun": {
+    "quoi": {
+      "slash_command": "quoi",
+      "description": "Répond 'feur' à quoi hihi."
+    }
+  },
+  "reddit": {
+    "waf": {
+      "slash_command": "waf",
+      "description": "Toutes tes vilaines images."
+    }
+  },
+  "vocal": {
+    "join": {
+      "slash_command": "join",
+      "description": "Rejoins le salon vocal."
+    },
+    "disconnect": {
+      "slash_command": "disconnect",
+      "description": "Part du salon vocal"
+    }
+  }
+}

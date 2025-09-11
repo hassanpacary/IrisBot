@@ -6,7 +6,6 @@ Utility functions to manage Discord bot activities (presence).
 """
 
 # --- Imports ---
-import os
 import logging
 import random
 from typing import Optional
@@ -16,12 +15,8 @@ import discord
 from discord.ext import commands
 
 # --- Bot modules ---
+from bot.core.config_loader import STRINGS
 from bot.services.anilist_service import fetch_random_anime
-from bot.utils.files_utils import load_json
-
-# --- Load json config files ---
-BOT = load_json(os.path.join("bot", "config", "bot.json"))
-STRINGS = load_json(os.path.join("bot", "config", f"strings.{BOT['langage']}.json"))
 
 
 # ██████╗  ██████╗ ████████╗     █████╗  ██████╗████████╗██╗██╗   ██╗██╗████████╗██╗   ██╗

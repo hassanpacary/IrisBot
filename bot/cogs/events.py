@@ -14,6 +14,7 @@ import discord
 from discord.ext import commands, tasks
 
 # --- bot modules ---
+from bot.core.config_loader import BOT, STRINGS
 from bot.services.activity_service import set_bot_activity, random_activity
 
 
@@ -93,8 +94,8 @@ class EventsCog(commands.Cog):
             Sends a welcome message in the server's system channel.
         """
         system_channel_id = member.guild.system_channel.id
-        welcome_channel_id = self.bot.config['bot']['channels']['welcome_channel_id']
-        welcome_message = random.choice(self.bot.config['strings']['event']['welcome_new_user']).format(
+        welcome_channel_id = BOT['channels']['welcome_channel_id']
+        welcome_message = random.choice(STRINGS['event']['welcome_new_user']).format(
             member=member.mention)
 
         # If a welcome channel has been set up, we use this one

@@ -7,23 +7,17 @@ Useful services for send response to discord user.
 
 # --- Imports ---
 import io
-import os
 
 # --- Third party imports ---
 import discord
 
 # --- Bot modules ---
+from bot.core.config_loader import STRINGS, REGEX
 from bot.services.reddit_service import fetch_reddit_medias
 from bot.services.video_service import get_video
 from bot.utils.aiohttp_client import aiohttp_client
 from bot.utils.discord_utils import send_response_to_discord
-from bot.utils.files_utils import load_json
 from bot.utils.strings_utils import matches_pattern, get_string_segment
-
-# --- Load json config files ---
-BOT = load_json(os.path.join("bot", "config", "bot.json"))
-STRINGS = load_json(os.path.join("bot", "config", f"strings.{BOT['langage']}.json"))
-REGEX = load_json(os.path.join("bot", "config", "regex.json"))
 
 
 # ███████╗██╗██╗     ███████╗███████╗

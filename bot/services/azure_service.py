@@ -16,11 +16,8 @@ import discord
 from discord import FFmpegPCMAudio
 
 # --- bot modules ---
-from bot.utils.files_utils import load_json
+from bot.core.config_loader import BOT
 from bot.utils.strings_utils import sanitize_text
-
-# --- Load json config files ---
-BOT = load_json(os.path.join("bot", "config", "bot.json"))
 
 # --- FFMPEG EXE ---
 FFMPEG_EXEC = os.path.join('tools', 'ffmpeg-8.0-essentials_build', 'bin', 'ffmpeg.exe')

@@ -13,7 +13,6 @@ import logging
 from bot.core.setup_bot import Bot
 from bot.core.environment import load_env, get_env_var
 from bot.core.setup_logging import setup_logging
-from bot.utils.aiohttp_client import aiohttp_shutdown
 
 
 # ███╗   ███╗ █████╗ ██╗███╗   ██╗
@@ -42,11 +41,8 @@ async def run() -> None:
     # Start bot
     bot = Bot()
 
-    try:
-        logging.info(run_banner)
-        await bot.start(get_env_var("DISCORD_TOKEN"))
-    finally:
-        await aiohttp_shutdown()
+    logging.info(run_banner)
+    await bot.start(get_env_var("DISCORD_TOKEN"))
 
 
 def main() -> None:
@@ -66,7 +62,6 @@ def main() -> None:
     except KeyboardInterrupt:
         logging.info("-- Bot stopped manually.")
         logging.info(on_disconnect_banner)
-
     except Exception as e:
         logging.critical("Fatal error in main: %s", e, exc_info=True)
         logging.info(on_disconnect_banner)

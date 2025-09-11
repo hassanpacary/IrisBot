@@ -12,14 +12,9 @@ import os
 import asyncpraw
 
 # --- bot modules ---
+from bot.core.config_loader import REGEX
 from bot.utils.aiohttp_client import aiohttp_client
-from bot.utils.files_utils import load_json
 from bot.utils.strings_utils import matches_pattern
-
-# --- Load json config files ---
-BOT = load_json(os.path.join("bot", "config", "bot.json"))
-STRINGS = load_json(os.path.join("bot", "config", f"strings.{BOT['langage']}.json"))
-REGEX = load_json(os.path.join("bot", "config", "regex.json"))
 
 
 # ██████╗ ███████╗██████╗ ██████╗ ██╗████████╗    ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗

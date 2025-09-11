@@ -10,8 +10,8 @@ import discord
 from discord.ext import commands
 
 # --- Bot modules ---
+from bot.core.config_loader import BOT
 from bot.utils.cogs_factory import load_all_cogs
-from bot.utils.files_utils import load_all_configs
 
 
 # ██████╗  ██████╗ ████████╗
@@ -28,12 +28,9 @@ class Bot(commands.Bot):
     def __init__(self) -> None:
         """Initialize the bot with a default command prefix and enabled intents."""
 
-        # --- Load json config files ---
-        self.config = load_all_configs()
-
         # Initialize intents dynamically from
         intents = discord.Intents.default()
-        for intent_name, enabled in self.config['bot'].get("intents", {}).items():
+        for intent_name, enabled in BOT.get("intents", {}).items():
             if hasattr(intents, intent_name):
                 setattr(intents, intent_name, enabled)
 
