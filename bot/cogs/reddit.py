@@ -73,8 +73,9 @@ class RedditCog(commands.Cog):
 
     @app_commands.command(
         name=COMMANDS['reddit']['waf']['slash_command'],
-        description=COMMANDS['reddit']['waf']['description'],
+        description=COMMANDS['reddit']['waf']['description']
     )
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def waf_logic(self, interaction: discord.Interaction, url: str):
         """
         Command to fetch and send media from a Reddit URL.
@@ -101,7 +102,7 @@ class RedditCog(commands.Cog):
             return
 
         await reply_with_medias(target=interaction, url=regex_search(pattern, url))
-        logging.info(f"-- {interaction.message.author} use /waf slash command with {url} url")
+        logging.info(f"-- {interaction.user.name} use /waf slash command with {url} url")
 
 
 async def setup(bot):

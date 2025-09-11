@@ -3,22 +3,26 @@
     "quoi": {
       "slash_command": "quoi",
       "description": "Répond 'feur'"
+    },
+    "roll": {
+      "slash_command": "roll",
+      "description": "Lance un dés pour déterminer un nombre aléatoire... Si Iris ne pipe pas le dés (Défaut 6)"
     }
   },
   "reddit": {
     "waf": {
       "slash_command": "waf",
-      "description": "Envoie les différents medias du post dans le salon"
+      "description": "Iris répond en envoyant les différents medias contenues dans le post"
     }
   },
   "vocal": {
     "join": {
       "slash_command": "join",
-      "description": "Rejoins le salon vocal"
+      "description": "Iris rejoint le salon vocal"
     },
     "disconnect": {
       "slash_command": "disconnect",
-      "description": "Quitte le salon vocal"
+      "description": "Iris quitte le salon vocal"
     }
   }
 }

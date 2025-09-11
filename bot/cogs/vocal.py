@@ -138,7 +138,7 @@ class VocalCog(commands.Cog):
             ephemeral=True
         )
         await user.voice.channel.connect()
-        logging.info(f"-- {interaction.message.author} use /join slash command. The bot connect to channel")
+        logging.info(f"-- {interaction.user.name} use /join slash command. The bot connect to channel")
 
     @app_commands.command(
         name=COMMANDS['vocal']['disconnect']['slash_command'],
@@ -177,7 +177,7 @@ class VocalCog(commands.Cog):
             ephemeral=True
         )
         await voice_client.disconnect(force=True)
-        logging.info(f"-- {interaction.message.author} use /disconnect slash command. the bot has disconnected from channel")
+        logging.info(f"-- {interaction.user.name} use /disconnect slash command. the bot has disconnected from channel")
 
 
 async def setup(bot):

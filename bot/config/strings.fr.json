@@ -38,10 +38,11 @@
     ]
   },
   "fun": {
-    "quoi": "feur"
+    "quoi": "feur",
+    "roll_result": "Hm~~ {first_result}... En fait non, je préfère {second_result}"
   },
   "reddit": {
-    "reply_message_with_medias_count": "J'ai trouvé {medias_count} medias sur ton post :pig:",
+    "reply_message_with_medias_count": "Tiens, voilà toutes les info du post Reddit :pig:",
     "wrong_url": "Fais au moins l'effort de me fournir une bonne URL !"
   },
   "vocal": {

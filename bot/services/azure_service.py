@@ -19,9 +19,6 @@ from discord import FFmpegPCMAudio
 from bot.core.config_loader import BOT
 from bot.utils.strings_utils import sanitize_text
 
-# --- FFMPEG EXE ---
-FFMPEG_EXEC = os.path.join('tools', 'ffmpeg-8.0-essentials_build', 'bin', 'ffmpeg.exe')
-
 
 #  █████╗ ███████╗██╗   ██╗██████╗ ███████╗    ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗
 # ██╔══██╗╚══███╔╝██║   ██║██╔══██╗██╔════╝    ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝
@@ -84,7 +81,7 @@ async def play_audio_bytes(voice_client: discord.VoiceClient, audio_bytes: bytes
         tmp_file.flush()
 
         if not voice_client.is_playing():
-            voice_client.play(FFmpegPCMAudio(executable=FFMPEG_EXEC, source=tmp_file.name))
+            voice_client.play(FFmpegPCMAudio(source=tmp_file.name))
 
 
 async def text_to_speech(voice_client: discord.VoiceClient, message: discord.Message):

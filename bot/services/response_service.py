@@ -84,7 +84,12 @@ async def send_medias_response(target: discord.Interaction | discord.Message ,me
 
     # --- Reddit video ---
     if is_video :
-        filesize_limit = target.guild.filesize_limit
+
+        if target.guild is None:
+            filesize_limit = 10 * 1024 * 1024
+        else:
+            filesize_limit = target.guild.filesize_limit
+
         await send_video(
             target=target,
             url=medias[0],

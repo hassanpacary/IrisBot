@@ -13,6 +13,7 @@ from bot.core.config_loader import RUN_BANNER, INTERUPT_BANNER
 from bot.core.setup_bot import Bot
 from bot.core.environment import load_env, get_env_var
 from bot.core.setup_logging import setup_logging
+from bot.utils.aiohttp_client import aiohttp_shutdown
 
 
 # ███╗   ███╗ █████╗ ██╗███╗   ██╗
@@ -22,11 +23,18 @@ from bot.core.setup_logging import setup_logging
 # ██║ ╚═╝ ██║██║  ██║██║██║ ╚████║
 # ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
 
+
 async def run() -> None:
     """Initialize and start the Discord bot."""
     load_env()
     bot = Bot()
-    await bot.start(get_env_var("DISCORD_TOKEN"))
+
+    try:
+        await bot.start(get_env_var("DISCORD_TOKEN"))
+    finally:
+        await aiohttp_shutdown()
+        await bot.close()
+
 
 def main() -> None:
     """Entrypoint of the bot (sync wrapper)."""
@@ -42,7 +50,6 @@ def main() -> None:
     except Exception as e:
         logging.critical("Fatal error in main: %s", e, exc_info=True)
         logging.info(INTERUPT_BANNER)
-
 
 if __name__ == "__main__":
     main()

@@ -7,6 +7,7 @@ Cog containing fun slash commands logic.
 
 # --- Imports ---
 import logging
+import random
 
 # --- Third party imports ---
 import discord
@@ -76,6 +77,7 @@ class FunCog(commands.Cog):
         name=COMMANDS['fun']['quoi']['slash_command'],
         description=COMMANDS['fun']['quoi']['description']
     )
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def quoi_logic(self, interaction: discord.Interaction):
         """
         Responds to the /quoi slash command.
@@ -87,7 +89,38 @@ class FunCog(commands.Cog):
             Sends the message stored in the QUOI variable to the user.
         """
         await send_response_to_discord(target=interaction, content=STRINGS['fun']['quoi'])
-        logging.info(f"-- {interaction.message.author} use /quoi slash command")
+        logging.info(f"-- {interaction.user.name} use /quoi slash command")
+
+    @app_commands.command(
+        name=COMMANDS['fun']['roll']['slash_command'],
+        description=COMMANDS['fun']['roll']['description']
+    )
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+    async def roll_logic(self, interaction: discord.Interaction, sides: int = 6):
+        """
+        Responds to the /roll slash command.
+
+        Args:
+            interaction (discord.Interaction): The interaction object triggered by the user.
+            sides (int): The number of sides to roll. Default is 6.
+
+        Action:
+            Sends a random number between 1 and the number of sides.
+        """
+        random_number_1 = random.randint(1, sides)
+        random_number_2 = random_number_1
+
+        while random_number_1 == random_number_2:
+            random_number_2 = random.randint(1, sides)
+
+        await send_response_to_discord(
+            target=interaction,
+            content=STRINGS['fun']['roll_result'].format(
+                first_result = random_number_1,
+                second_result = random_number_2
+            )
+        )
+        logging.info(f"-- {interaction.user.name} use /roll slash command for dice with {sides} sides. Result: {random_number_1}, {random_number_2}")
 
 
 async def setup(bot):

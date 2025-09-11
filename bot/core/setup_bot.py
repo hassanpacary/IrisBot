@@ -11,6 +11,7 @@ from discord.ext import commands
 
 # --- Bot modules ---
 from bot.core.config_loader import BOT
+from bot.utils.aiohttp_client import aiohttp_shutdown
 from bot.utils.cogs_factory import load_all_cogs
 
 
@@ -44,7 +45,3 @@ class Bot(commands.Bot):
         """
         await load_all_cogs(self)
         await self.tree.sync()
-
-    async def close(self):
-        """Override close() to clean up aiohttp session."""
-        await super().close()

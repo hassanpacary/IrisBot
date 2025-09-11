@@ -18,3 +18,6 @@ If you want you can also add Iris on your server from here - [Discord Discovery 
 3. Change values in json files as you wish in `bot/config` ;
 4. Run `pip install -r requirements.txt` in your console, from the root of the project ;
 5. Execute `main.py`
+
+## Dependancies
+Reddit and vocal cog depend on `ffmpeg`. Install it and configure it in your system environment variables.

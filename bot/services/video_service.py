@@ -20,10 +20,6 @@ from bot.utils.aiohttp_client import aiohttp_client
 from bot.utils.discord_utils import create_discord_file
 from bot.utils.files_utils import load_file, write_file
 
-# --- FFMPEG EXE ---
-FFMPEG_EXEC = os.path.join('tools', 'ffmpeg-8.0-essentials_build', 'bin', 'ffmpeg.exe')
-FFPROBE_EXEC = os.path.join('tools', 'ffmpeg-8.0-essentials_build', 'bin', 'ffprobe.exe')
-
 
 # ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗     ██╗   ██╗██╗██████╗ ███████╗ ██████╗
 # ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗    ██║   ██║██║██╔══██╗██╔════╝██╔═══██╗
@@ -78,7 +74,7 @@ async def merge_video_audio_in_one_file(
     Raises:
         RuntimeError: If FFmpeg fails to merge video and audio.
     """
-    merge_cmd = [FFMPEG_EXEC, "-y", "-i", video_path]
+    merge_cmd = ["ffmpeg", "-y", "-i", video_path]
 
     if audio_path:
         merge_cmd += [
@@ -127,7 +123,7 @@ def get_video_duration(video_path: str) -> float:
     """
     result = subprocess.run(
         [
-            FFPROBE_EXEC,
+            "ffprobe",
             "-v", "error",
             "-select_streams", "v:0",
             "-show_entries", "format=duration",
@@ -166,7 +162,7 @@ async def compress_video(
     target_video_bitrate_bps = max(10_000, target_total_bitrate_bps - audio_bitrate_bps)
 
     compress_cmd = [
-        FFMPEG_EXEC,
+        "ffmpeg",
         "-y",
         "-i", input_path,
         "-c:v", "libx264",
@@ -232,7 +228,6 @@ async def get_video(
 
         # --- Return video if under filesize limit ---
         if os.path.getsize(tmp_out_path) <= file_size_limit:
-
             video = load_file(file_path=tmp_out_path, mode="rb")
             return create_discord_file(data=video, filename=filename)
 
