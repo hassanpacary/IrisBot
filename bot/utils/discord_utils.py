@@ -27,33 +27,44 @@ async def send_response_to_discord(
         content: str = None,
         files: list[discord.File] = None,
         embed: discord.Embed = None,
-        ephemeral: bool = False
-) -> None:
+        ephemeral: bool = False,
+        detach: bool = False,
+):
     """
-    Send a response to either a Discord Message or an Interaction.
+    Send a response to either a Discord Message or an Interaction
 
-    Args:
-        target (discord.Message | Interaction): The message or interaction to respond to.
-        content (str): The message text (optional).
-        files (list[discord.File]): The files to send.
-        embed (discord.Embed): The embed to send.
-        ephemeral (bool): Whether the response should be ephemeral (only works with interactions).
+    Parameters:
+        target (discord.Message | Interaction): The message or interaction to respond to
+        content (str): The message text (optional)
+        files (list[discord.File]): The files to send
+        embed (discord.Embed): The embed to send
+        ephemeral (bool): Whether the response should be ephemeral (only works with interactions)
+        detach (bool): Whether the response should be detached (only works with interactions)
     """
     if files is None:
         files = []
 
+    print(target.guild)
     # --- Response to Slash command ---
     if isinstance(target, discord.Interaction):
-        if target.response.is_done():  # type: ignore
+
+        # If flag detach is true, send a simple message in the channel
+        if detach:
+            await target.channel.send(content=content, files=files, embed=embed)
+
+        # 2nd and all new response in the ctx
+        elif target.response.is_done():  # type: ignore
             await target.followup.send(content=content, files=files, embed=embed, ephemeral=ephemeral)
+
+        # 1st response
         else:
             await target.response.send_message(content=content, files=files, embed=embed, ephemeral=ephemeral)  # type: ignore
 
     # --- Response to user message ---
     elif isinstance(target, discord.Message):
-        await target.reply(content=content, files=files, embed=embed)
+        await target.channel.send(content=content, files=files, embed=embed)
 
-    logging.info(f"-- Discord message has been sent: {content} with files: {files}")
+    logging.info(f"-- Discord message has been sent: {content}")
 
 
 # ███████╗███╗   ███╗██████╗ ███████╗██████╗      ██████╗██████╗ ███████╗ █████╗ ████████╗ ██████╗ ██████╗
@@ -64,49 +75,51 @@ async def send_response_to_discord(
 # ╚══════╝╚═╝     ╚═╝╚═════╝ ╚══════╝╚═════╝      ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
 
 
-async def send_embed_to_discord(
-        target: discord.Interaction | discord.Message,
+async def create_discord_embed(
         color: discord.Color = discord.Color.blurple(),
         title: str = None,
         title_url: str = None,
         description: str = None,
-        date: datetime | None = None,
+        date: int = None,
         author: str = None,
         icon: str = None,
-        fields: list[dict] = None,
+        fields: list[tuple] = None,
         thumbnail_url: str = None,
         image_url: str = None,
         footer_text: str = None,
         footer_icon_url: str = None
-) -> None:
+) -> discord.Embed:
     """
-    Sends a Discord embed to either an Interaction or a Message.
+    Sends a Discord embed to either an Interaction or a Message
 
-    Args:
-        target (discord.Interaction | discord.Message): Target to send the embed to.
-        color (discord.Color): Embed color.
-        title (str): Embed title.
-        title_url (str): Embed title URL.
-        description (str): Embed description.
-        date (datetime | None): Embed date.
-        author (str): Embed author.
-        icon (str): Embed icon.
-        fields (list[dict]): List of fields, each dict with 'name', 'value', 'inline' (optional, default True).
-        thumbnail_url (str): URL for the embed thumbnail.
-        image_url (str): URL for the embed main image.
-        footer_text (str): Footer text.
-        footer_icon_url (str): Footer icon URL.
+    Parameters:
+        color (discord.Color): Embed color
+        title (str): Embed title
+        title_url (str): Embed title URL
+        description (str): Embed description
+        date (datetime | None): Embed date
+        author (str): Embed author
+        icon (str): Embed icon
+        fields (list[dict]): List of fields, each dict with 'name', 'value', 'inline' (optional, default True)
+        thumbnail_url (str): URL for the embed thumbnail
+        image_url (str): URL for the embed main image
+        footer_text (str): Footer text
+        footer_icon_url (str): Footer icon URL
+
+    Returns:
+        discord.Embed: The embed object
     """
-    embed = discord.Embed(color=color, title=title, url=title_url, description=description, timestamp=date)
+    timestamp = datetime.fromtimestamp(date)
+    embed = discord.Embed(color=color, title=title, url=title_url, description=description, timestamp=timestamp)
     embed.set_author(name=author, icon_url=icon)
 
     # Add fields if any
     if fields:
-        for field in fields:
+        for field_name, field_value in fields:
             embed.add_field(
-                name=field.get("name", "Unnamed"),
-                value=field.get("value", "\u200b"),
-                inline=field.get("inline", True)
+                name=field_name,
+                value=field_value,
+                inline=True
             )
 
     # Add thumbnail and image
@@ -119,10 +132,7 @@ async def send_embed_to_discord(
     if footer_text:
         embed.set_footer(text=footer_text, icon_url=footer_icon_url)
 
-    await send_response_to_discord(
-        target=target,
-        embed=embed
-    )
+    return embed
 
 
 #  ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗    ███████╗██╗██╗     ███████╗
@@ -135,13 +145,13 @@ async def send_embed_to_discord(
 
 def create_discord_file(data: bytes, filename: str) -> discord.File:
     """
-    Create a discord.File object from raw bytes.
+    Create a discord.File object from raw bytes
 
-    Args:
-        data (bytes): Raw file data.
-        filename (str): Filename to assign to the file.
+    Parameters:
+        data (bytes): Raw file data
+        filename (str): Filename to assign to the file
 
     Returns:
-        discord.File: A Discord-compatible file object.
+        discord.File: A Discord-compatible file object
     """
     return discord.File(io.BytesIO(data), filename=filename)

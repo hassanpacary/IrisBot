@@ -2,7 +2,7 @@
 bot/core/environment.py
 © by hassanpacary
 
-configuration and load the environment variables.
+configuration and load the environment variables
 """
 
 # --- Imports ---
@@ -21,13 +21,7 @@ from dotenv import load_dotenv, find_dotenv
 
 
 def load_env() -> None:
-    """
-    Load environment variables from the .env file.
-
-    Notes:
-        - Exits the program if no `.env` file is found.
-        - Must be called once at the start of the program.
-    """
+    """Load environment variables from the .env file"""
     dotenv_path = find_dotenv()
 
     # --- dotenv file not found ---
@@ -39,26 +33,21 @@ def load_env() -> None:
     logging.info("-- Environment variables loaded")
 
 
-def get_env_var(key: str, required: bool = True) -> str | None:
+def get_env_var(var: str) -> str:
     """
-    Retrieve an environment variable safely.
+    Retrieve an environment variable safely
 
-    Args:
-        key (str): The name of the environment variable.
-        required (bool): If True, exit the program if the variable is missing.
-                         If False, return None when not found.
+    Parameters:
+        var (str): The name of the environment variable to retrieve
 
     Returns:
-        str | None: The value of the environment variable.
-
-    Notes:
-        - Use this instead of os.getenv directly for consistency.
+        str: The value of the environment variable
     """
-    env_variable = os.getenv(key)
+    env_variable = os.getenv(var)
 
     # --- Environment variable not found ---
-    if not env_variable and required:
-        logging.error(f"Required environment variable '{key}' not found.")
+    if not env_variable:
+        logging.error(f"Required environment variable '{var}' not found.")
         sys.exit(1)
 
     return env_variable

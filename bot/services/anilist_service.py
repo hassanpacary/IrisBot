@@ -2,9 +2,9 @@
 anilist_service.py
 © by hassanpacary
 
-Service for fetching data from AniList API.
+Utility functions for fetching data from AniList API
 """
-import logging
+
 # --- Imports ---
 import random
 import os
@@ -24,7 +24,7 @@ from bot.utils.files_utils import load_file, load_yaml
 
 async def load_api_endpoint() -> tuple[str, dict]:
     """
-    Loads the GraphQL endpoint URL and headers from graphql.config.yml.
+    Loads the AniList GraphQL endpoint URL and headers from graphql.config.yml
 
     Returns:
         tuple: (url: str, headers: dict)
@@ -38,7 +38,12 @@ async def load_api_endpoint() -> tuple[str, dict]:
 
 
 async def load_graphql_query(query: str) -> str:
-    """Load a GraphQL query file from the queries/ directory."""
+    """
+    Load a GraphQL query file from the `queries` directory
+
+    Returns:
+        str: GraphQL query
+    """
     query_file_path = os.path.join('bot', 'queries', query)
 
     # --- Read the query file ---
@@ -54,7 +59,12 @@ async def load_graphql_query(query: str) -> str:
 
 
 async def get_anilist_total_anime() -> int:
-    """Fetch the total number of anime entries on AniList."""
+    """
+    Fetch the total number of anime entries on AniList
+
+    Returns:
+        int: Total number of anime entries in AniList
+    """
     api_url, headers = await load_api_endpoint()
     query = await load_graphql_query('get_anilist_total_anime.graphql')
 
@@ -63,12 +73,16 @@ async def get_anilist_total_anime() -> int:
         data = await resp.json()
         total_anime = data['data']['Page']['pageInfo']['total']
 
-        logging.info(f"--- AniList total anime entries: {total_anime}")
         return total_anime
 
 
 async def fetch_random_anime() -> dict:
-    """Fetch a random anime from AniList."""
+    """
+    Fetch a random anime from AniList
+
+    Returns:
+        dict: Random anime entry
+    """
     api_url, headers = await load_api_endpoint()
     query = await load_graphql_query('get_anilist_random_page.graphql')
 
@@ -86,5 +100,4 @@ async def fetch_random_anime() -> dict:
         data = await resp.json()
         random_anime = random.choice(data['data']['Page']['media'])
 
-        logging.info(f"--- Random anime entries: {random_anime}")
         return random_anime

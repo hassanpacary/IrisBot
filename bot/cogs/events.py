@@ -2,7 +2,7 @@
 events.py
 © by hassanpacary
 
-Cog containing events listener of the bot.
+Cog containing globals events listener and their logic
 """
 
 # --- Imports ---
@@ -27,10 +27,10 @@ from bot.services.activity_service import set_bot_activity, random_activity
 
 
 class EventsCog(commands.Cog):
-    """Cog containing events listener of the bot."""
+    """Event cog class"""
 
     def __init__(self, bot):
-        """Initialize the cog with a reference to the bot."""
+        """Initialize the cog with a reference to the bot"""
         self.bot = bot
 
     # ██████╗  ██████╗ ████████╗    ███████╗████████╗ █████╗ ████████╗███████╗
@@ -42,12 +42,9 @@ class EventsCog(commands.Cog):
 
     @tasks.loop(hours=1)
     async def status_swap(self):
-        """Background task that updates the bot's presence every hour."""
-
-        # --- Get random activity ---
+        """Background task that updates the bot's presence every hour"""
         activity_name, activity_type, activity_state = await random_activity()
 
-        # --- Set bot activity ---
         await set_bot_activity(
             bot=self.bot,
             activity_name=activity_name,
@@ -59,7 +56,7 @@ class EventsCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        """Event triggered when the bot is ready and connected to Discord."""
+        """Event triggered when the bot is ready and connected to Discord"""
         logging.info(ON_READY_BANNER)
         logging.info(f"-- Bot connected as {self.bot.user.name}")
 
@@ -68,7 +65,7 @@ class EventsCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_resumed(self):
-        """Event listener triggered when the bot successfully reconnects."""
+        """Event listener triggered when the bot successfully reconnects"""
         logging.info(f"-- Bot is resumed as {self.bot.user.name}")
 
     # ███╗   ██╗███████╗██╗    ██╗    ███╗   ███╗███████╗███╗   ███╗██████╗ ███████╗██████╗
@@ -81,12 +78,16 @@ class EventsCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         """
-        Event triggered when a new member joins the server.
+        Event triggered when a new member joins the server
+
+        Parameters:
+            member (discord.Member): The member who joined the server
 
         Action:
-            Sends a welcome message in the server's system channel.
+            Sends a welcome message in the server's system channel
         """
         system_channel_id = member.guild.system_channel.id
+
         welcome_channel_id = BOT['channels']['welcome_channel_id']
         welcome_message = random.choice(STRINGS['event']['welcome_message']).format(
             member=member.mention)
@@ -109,12 +110,16 @@ class EventsCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
         """
-        Event triggered when a member leave the server.
+        Event triggered when a member leave the server
+
+        Parameters:
+            member (discord.Member): The member who left the server
 
         Action:
-            Sends a leave message in the server's system channel.
+            Sends a leave message in the server's system channel
         """
         system_channel_id = member.guild.system_channel.id
+
         goodbye_channel_id = BOT['channels']['goodbye_channel_id']
         goodbye_message = random.choice(STRINGS['event']['goodbye_message']).format(
             member=member.mention)
@@ -129,5 +134,5 @@ class EventsCog(commands.Cog):
 
 
 async def setup(bot):
-    """Adds this cog to the given bot."""
+    """Adds this cog to the given bot"""
     await bot.add_cog(EventsCog(bot))

@@ -2,7 +2,7 @@
 bot/core/setup_bot.py
 © by hassanpacary
 
-Custom Discord bot class with automated configuration and cog loading.
+Custom Discord bot class with automated configuration and cog loading
 """
 
 # --- Third party imports ---
@@ -11,7 +11,6 @@ from discord.ext import commands
 
 # --- Bot modules ---
 from bot.core.config_loader import BOT
-from bot.utils.aiohttp_client import aiohttp_shutdown
 from bot.utils.cogs_factory import load_all_cogs
 
 
@@ -24,12 +23,12 @@ from bot.utils.cogs_factory import load_all_cogs
 
 
 class Bot(commands.Bot):
-    """Defining the bot's default intents and command prefix."""
+    """Discord bot class"""
 
     def __init__(self) -> None:
-        """Initialize the bot with a default command prefix and enabled intents."""
+        """Initialize the bot with a default command prefix and enabled intents"""
 
-        # Initialize intents dynamically from
+        # Initialize intents dynamically
         intents = discord.Intents.default()
         for intent_name, enabled in BOT.get("intents", {}).items():
             if hasattr(intents, intent_name):
@@ -39,9 +38,6 @@ class Bot(commands.Bot):
         super().__init__(command_prefix="/", intents=intents)
 
     async def setup_hook(self) -> None:
-        """
-        Lifecycle hook called automatically by :class:`discord.Client`
-        before the bot connects to Discord.
-        """
+        """Lifecycle hook called automatically before the bot connects to Discord"""
         await load_all_cogs(self)
         await self.tree.sync()

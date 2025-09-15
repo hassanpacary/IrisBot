@@ -2,7 +2,7 @@
 bot/services/reddit_service.py
 © by hassanpacary
 
-Useful services for fetching images from Reddit posts and sending them to Discord.
+Utility functions for fetching images from Reddit posts and sending them to Discord
 """
 
 # --- Imports ---
@@ -26,7 +26,12 @@ from bot.utils.strings_utils import matches_pattern
 
 
 def create_reddit_client() -> asyncpraw.Reddit:
-    """Creates and returns an asyncpraw Reddit client using environment variables."""
+    """
+    Creates and returns an asyncpraw Reddit client using environment variables
+
+    Returns:
+        asyncpraw.reddit.Reddit client
+    """
     return asyncpraw.Reddit(
         client_id=os.environ["REDDIT_CLIENT_ID"],
         client_secret=os.environ["REDDIT_CLIENT_SECRET"],
@@ -34,29 +39,46 @@ def create_reddit_client() -> asyncpraw.Reddit:
     )
 
 
-async def extract_submission_medias(submission) -> list[str]:
+async def extract_submission_data(submission) -> dict:
     """
-    Extracts all media URLs from a Reddit submission, including videos, galleries, and images.
+    Extracts data from submission data with media URLs from a Reddit submission
 
-    Args:
+    Parameters:
         submission (asyncpraw.models.Submission): The Reddit submission object.
 
     Returns:
-        list[str]: List of media URLs.
+        list[str]: List of all submission data
     """
     pattern = REGEX['youtube']['pattern']
-    medias = []
+
+    # Load the subreddit object
+    subreddit = submission.subreddit
+    await subreddit.load()
+
+    # All submissions data retrieve
+    submission_data = {
+        "post_title": submission.title,
+        "post_url": submission.url,
+        "post_content": submission.selftext,
+        "creation_date": submission.created_utc,
+        "subreddit_name": subreddit.display_name,
+        "author_name": getattr(submission.author, "name", "") or "",
+        "subreddit_icon": subreddit.icon_img,
+        "upvote_number": submission.score,
+        "responses_number": submission.num_comments,
+        "medias": []
+    }
 
     # --- Reddit video ---
     if getattr(submission, "is_video", False):
-        medias.append(submission.media["reddit_video"]["fallback_url"])
+        submission_data['medias'].append(submission.media["reddit_video"]["fallback_url"])
 
     # --- Reddit gallery ---
     elif hasattr(submission, "gallery_data"):
         for item in submission.gallery_data["items"]:
             media_id = item["media_id"]
             meta = submission.media_metadata[media_id]
-            medias.append(meta["s"]["u"])
+            submission_data['medias'].append(meta["s"]["u"])
 
     # --- single image or YouTube link ---
     else:
@@ -66,23 +88,26 @@ async def extract_submission_medias(submission) -> list[str]:
             content_type = resp.headers.get("Content-Type", "")
 
             if content_type.startswith("image/") or matches_pattern(pattern, url):
-                medias.append(url)
+                submission_data['medias'].append(url)
 
-    return medias
+    return submission_data
 
 
-async def fetch_reddit_medias(url: str) -> list[str]:
+async def fetch_reddit_data(url: str) -> dict:
     """
-    Fetches media URLs from a given Reddit post.
+    Fetches reddit submission data from a given Reddit post
+
+    Parameters:
+        url (str): Reddit post url
 
     Returns:
-        list[str]: A list of media URLs extracted from the submission.
+        list[str]: A list of data extracted from the submission.
     """
 
     # --- Create Reddit client ---
     reddit_client = create_reddit_client()
 
     submission = await reddit_client.submission(url=url)
-    medias = await extract_submission_medias(submission=submission)
+    submission_data = await extract_submission_data(submission=submission)
 
-    return medias
+    return submission_data

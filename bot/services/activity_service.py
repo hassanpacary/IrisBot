@@ -2,7 +2,7 @@
 bot/utils/activity_service.py
 © by hassanpacary
 
-Utility functions to manage Discord bot activities (presence).
+Utility functions to manage Discord bot activities (presence)
 """
 
 # --- Imports ---
@@ -29,25 +29,19 @@ from bot.services.anilist_service import fetch_random_anime
 async def set_bot_activity(
         bot: commands.Bot,
         activity_name: str,
-        activity_type: str = "watching",
-        activity_state: Optional[str] = None,
+        activity_type: str,
+        activity_state: Optional[str],
         url: Optional[str] = None
 ) -> None:
     """
-    Change the bot's Discord activity (presence) in a standardized way.
+    Change the bot's Discord activity (presence) in a standardized way
 
-    Args:
-        bot (commands.Bot): The bot instance.
-        activity_name (str): Name of the activity (e.g., game title or anime name).
-        activity_type (Literal["game", "watching", "listening", "streaming"]):
-            Type of the activity. Defaults to 'watching'.
-        activity_state (Optional[str]): Optional detailed state/description.
-        url (Optional[str]): Optional URL for streaming activity.
-
-    Usage:
-        await set_bot_activity(bot, "Minecraft", "game")
-        await set_bot_activity(bot, "Anime XYZ", "watching", "Episode 10")
-        await set_bot_activity(bot, "Music Stream", "streaming", url="https://twitch.tv/xyz")
+    Parameters:
+        bot (commands.Bot): The bot instance
+        activity_name (str): Name of the activity (e.g., game title or anime name)
+        activity_type (str): Type of the activity (e.g., game or watching)
+        activity_state (Optional[str]): Optional detailed state/description
+        url (Optional[str]): Optional URL for (especially for streaming activity)
     """
 
     # --- Play game ---
@@ -82,19 +76,15 @@ async def set_bot_activity(
 
 async def watching_state_constructor(activity: dict) -> str:
     """
-    Construct a formatted state string from an activity dictionary.
+    Construct a formatted state string from an activity dictionary
 
-    The function combines different pieces of metadata about an anime
-    Each available element is appended to the final string, separated by " | ".
-
-    Args:
-        activity (dict): A dictionary containing information about the activity.
+    Parameters:
+        activity (dict): A dictionary containing information about the activity
 
     Returns:
-        str: A formatted string describing the activity state.
+        str: A formatted string describing the activity state
              Example: "12 épisodes | score moyen 85% | genres Action, Adventure"
     """
-    # --- Load strings for watching state
     watching_state_informations = STRINGS['event']['status_activity']['watching_state_informations']
 
     state_parts = []
@@ -147,17 +137,18 @@ async def watching_state_constructor(activity: dict) -> str:
 
 async def random_activity() -> tuple[str, str, str]:
     """
-    Generates a random activity for the bot's presence.
+    Generates a random activity for the bot's presence
 
     Depending on a random choice, the activity can either be:
-    1. A randomly selected anime from AniList.
-    2. A preset activity defined in the strings JSON configuration.
+    1. A randomly selected anime from AniList
+    2. A preset activity defined in the strings JSON configuration
 
     Returns:
-        tuple[str, str, str]:
-            - activity_name (str): The display name of the activity.
-            - activity_type (str): The type of activity, e.g., "watching" or "game".
-            - activity_state (str): Optional state/description associated with the activity.
+        tuple[
+        activity_name (str): The display name of the activity,
+        activity_type (str): The type of activity, e.g., "watching" or "game",
+        activity_state (str): Optional state/description associated with the activity
+        ]
     """
     preset_activities = STRINGS['event']['status_activity']['preset_activity']
 

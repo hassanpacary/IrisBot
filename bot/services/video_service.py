@@ -2,7 +2,7 @@
 bot/services/video_service.py
 © by hassanpacary
 
-Useful services for video downloader, mux and compression.
+Utility functions for video downloader, mux and compression.
 """
 
 # --- Imports ---
@@ -31,16 +31,16 @@ from bot.utils.files_utils import load_file, write_file
 
 async def download_video_and_audio_source(url: str, tmpdir: str, filename: str) -> tuple[str, str | None]:
     """
-    Downloads the Reddit video and optional audio to temporary files.
+    Downloads the Reddit video and optional audio to temporary files
 
-    Args:
-        url (str): URL of the Reddit video.
-        tmpdir (str): Path to a temporary directory for intermediate files.
-        filename (str): Base filename to use for saved files.
+    Parameters:
+        url (str): URL of the Reddit video
+        tmpdir (str): Path to a temporary directory for intermediate files
+        filename (str): Base filename to use for saved files
 
     Returns:
-        tuple[str, str | None]: Paths to the downloaded video and audio files.
-                                 Audio path is None if no audio is found.
+        tuple[str, str | None]: Paths to the downloaded video and audio files
+                                Audio path is None if no audio is found
     """
     tmp_video_path = os.path.join(tmpdir, filename + "_video.mp4")
     tmp_audio_path = os.path.join(tmpdir, filename + "_audio.mp4")
@@ -50,7 +50,7 @@ async def download_video_and_audio_source(url: str, tmpdir: str, filename: str) 
 
     audio_data = await aiohttp_client.download_bytes(url.split("DASH_")[0] + "DASH_AUDIO_128.mp4")
 
-    # --- If audio exist ---
+    # --- Audio exist ---
     if audio_data:
         write_file(tmp_audio_path, audio_data)
     else:
@@ -64,15 +64,12 @@ async def merge_video_audio_in_one_file(
         audio_path: str | None,
         output_path: str):
     """
-    Merges video and optional audio into a single .mp4 file using FFmpeg.
+    Merges video and optional audio into a single .mp4 file using FFmpeg
 
-    Args:
-        video_path (str): Path to the video file.
-        audio_path (str | None): Path to the audio file, or None if no audio.
-        output_path (str): Path for the merged output file.
-
-    Raises:
-        RuntimeError: If FFmpeg fails to merge video and audio.
+    Parameters:
+        video_path (str): Path to the video file
+        audio_path (str | None): Path to the audio file, or None if no audio
+        output_path (str): Path for the merged output file
     """
     merge_cmd = ["ffmpeg", "-y", "-i", video_path]
 
@@ -110,16 +107,13 @@ async def merge_video_audio_in_one_file(
 
 def get_video_duration(video_path: str) -> float:
     """
-    Retrieves the duration of a video file using ffprobe.
+    Retrieves the duration of a video file using ffprobe
 
-    Args:
-        video_path (str): Path to the video file.
+    Parameters:
+        video_path (str): Path to the video file
 
     Returns:
-        float: Video duration in seconds.
-
-    Raises:
-        RuntimeError: If ffprobe fails.
+        float: Video duration in seconds
     """
     result = subprocess.run(
         [
@@ -145,15 +139,12 @@ async def compress_video(
         output_path: str,
         filesize_limit: int):
     """
-    Compresses a video using FFmpeg to a target bitrate and scales to 1280px width.
+    Compresses a video using FFmpeg to a target bitrate and scales to 1280px width
 
-    Args:
-        input_path (str): Path to the input video.
-        output_path (str): Path for the compressed output.
+    Parameters:
+        input_path (str): Path to the input video
+        output_path (str): Path for the compressed output
         filesize_limit (int): Guild filesize limit
-
-    Raises:
-        RuntimeError: If FFmpeg fails to compress the video.
     """
     # Calcul the target video bitrate
     duration = get_video_duration(video_path=input_path)
@@ -198,16 +189,16 @@ async def get_video(
         filename: str,
         file_size_limit: int) -> discord.File | None:
     """
-    Downloads, merges, and compresses a Reddit video to fit under a file size limit.
+    Downloads, merges, and compresses a Reddit video to fit under a file size limit
 
-    Args:
-        url (str): URL of the Reddit video.
-        filename (str): Base filename without extension.
-        file_size_limit (int): Maximum allowed file size in bytes.
+    Parameters:
+        url (str): URL of the Reddit video
+        filename (str): Base filename without extension
+        file_size_limit (int): Maximum allowed file size in bytes
 
     Returns:
-        discord.File | None: Discord file object with the merged/compressed video,
-                             or None if something fails.
+        discord.File | None: Discord file object with the merged/compressed video
+                             or None if something fails
     """
     filename_without_ext = Path(filename).stem
 

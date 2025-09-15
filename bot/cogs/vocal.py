@@ -2,11 +2,13 @@
 vocal.py
 © by hassanpacary
 
-Cog containing vocal slash commands for the bot.
+Cog containing vocal slash commands and their logic
 """
-import logging
 
 # --- Imports ---
+import logging
+
+# --- Third party imports ---
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -26,10 +28,10 @@ from bot.utils.discord_utils import send_response_to_discord
 
 
 class VocalCog(commands.Cog):
-    """Cog containing vocal commands for the bot."""
+    """Vocal cog class"""
 
     def __init__(self, bot):
-        """Initialize the cog with a reference to the bot."""
+        """Initialize the cog with a reference to the bot"""
         self.bot = bot
 
     # ███████╗██╗   ██╗███████╗███╗   ██╗████████╗███████╗    ██╗      ██████╗  ██████╗ ██╗ ██████╗
@@ -42,13 +44,17 @@ class VocalCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """
-        Event listener that triggers whenever a message is sent in a channel or DM.
+        Event listener that triggers whenever a message is sent in a channel
 
-        Action:
-            - Ignores any message sent by the bot itself.
-            - Check if the message is sent in the vocal channel (textuel) and if Iris is in vocal
-                - If matched, calls text_to_speech for TTS
-            - Other messages are ignored by this listener.
+        Parameters:
+            message (discord.Message): The message who trigger the listener
+
+        Actions:
+            - Check if the message is sent in the vocal channel (textuel) and if the bot is in vocal
+            - If matched, calls text_to_speech
+
+        this event converts what users send in a text channel,
+         into audio played by the bot connected in a voice channel
         """
         vocal_text_id = BOT['channels']['textuel_vocal_channel']
 
@@ -59,7 +65,6 @@ class VocalCog(commands.Cog):
         message_author_voice_state = message.author.voice
         bot_voice_client = discord.utils.get(self.bot.voice_clients, guild=message.guild)
 
-        # --- Text to speech event listener ---
         if (message_author_voice_state and
                 bot_voice_client and
                 message_author_voice_state.channel == bot_voice_client.channel and
@@ -82,20 +87,16 @@ class VocalCog(commands.Cog):
     )
     async def join_logic(self, interaction: discord.Interaction):
         """
-        Command for making Iris join the user's voice channel.
+        Responds to the /join slash command
 
-        Event:
-            Triggered when a user executes the /join command.
+        Parameters:
+            interaction (discord.Interaction): The interaction object triggered by the user
 
         Action:
-            - Checks if the user is connected to a voice channel.
-            - If the user is not in a voice channel, sends an ephemeral warning message.
-            - If the bot is already connected to the same channel, sends an ephemeral
-              confirmation that it is already present.
-            - If the bot is connected to a different voice channel, it moves the bot
-              to the user's channel and confirms the change.
-            - If the bot is not connected, it joins the user's voice channel and
-              confirms a successful connection.
+            - If the user is not in a voice channel, sends an ephemeral message
+            - If the bot is already connected to the same channel, sends an ephemeral message
+            - If the bot is connected to a different voice channel, moves the bot
+            - If the bot is not connected, joins the user's voice channel
         """
         responses_strings = STRINGS['vocal']
 
@@ -127,8 +128,8 @@ class VocalCog(commands.Cog):
                 content=responses_strings['bot_change_channel'],
                 ephemeral=True
             )
-            await bot_voice_client.move_to(user.voice.channel)
             logging.info(f"-- {interaction.message.author} use /join slash command. The bot has changed channel")
+            await bot_voice_client.move_to(user.voice.channel)
             return
 
         # --- Else connect the bot in same vocal channel as the user
@@ -137,8 +138,9 @@ class VocalCog(commands.Cog):
             content=responses_strings['bot_connect_with_success'],
             ephemeral=True
         )
-        await user.voice.channel.connect()
+
         logging.info(f"-- {interaction.user.name} use /join slash command. The bot connect to channel")
+        await user.voice.channel.connect()
 
     @app_commands.command(
         name=COMMANDS['vocal']['disconnect']['slash_command'],
@@ -146,16 +148,14 @@ class VocalCog(commands.Cog):
     )
     async def disconnect_logic(self, interaction: discord.Interaction):
         """
-        Command for making Iris disconnect from the voice channel.
+        Responds to the /join slash command
 
-        Event:
-            Triggered when a user executes the /disconnect command.
+        Parameters:
+            interaction (discord.Interaction): The interaction object triggered by the user
 
         Action:
-            - Checks if the bot is connected to a voice channel in the guild.
-            - If the bot is not connected, sends an ephemeral warning message.
-            - If the bot is connected, disconnects from the voice channel and
-              sends an ephemeral confirmation message.
+            - If the bot is not connected, sends an ephemeral message
+            - If the bot is connected, disconnects from the voice channel
         """
         responses_strings = STRINGS['vocal']
 
@@ -176,15 +176,11 @@ class VocalCog(commands.Cog):
             content=responses_strings['bot_disconnected_with_success'],
             ephemeral=True
         )
-        await voice_client.disconnect(force=True)
+
         logging.info(f"-- {interaction.user.name} use /disconnect slash command. the bot has disconnected from channel")
+        await voice_client.disconnect(force=True)
 
 
 async def setup(bot):
-    """
-    Adds this cog to the given bot.
-
-    Args:
-        bot (commands.Bot): The bot instance to which the cog will be added.
-    """
+    """Adds this cog to the given bot"""
     await bot.add_cog(VocalCog(bot))

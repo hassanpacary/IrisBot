@@ -2,7 +2,7 @@
 bot/core/setup_logging.py
 © by hassanpacary
 
-Configuration of the logs.
+Configuration of the logs
 """
 
 # --- Imports ---

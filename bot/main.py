@@ -2,10 +2,11 @@
 bot/main.py
 © by hassanpacary
 
-Entrypoint of the Discord bot.
+Entrypoint of the Discord bot
 """
-import asyncio
+
 # --- Imports ---
+import asyncio
 import logging
 
 # --- Bot modules ---
@@ -25,7 +26,7 @@ from bot.utils.aiohttp_client import aiohttp_shutdown
 
 
 async def run() -> None:
-    """Initialize and start the Discord bot."""
+    """Initialize and start the Discord bot"""
     load_env()
     bot = Bot()
 
@@ -37,7 +38,7 @@ async def run() -> None:
 
 
 def main() -> None:
-    """Entrypoint of the bot (sync wrapper)."""
+    """Main func. Setup logging config and run the Discord bot"""
     setup_logging()
     logging.info(RUN_BANNER)
 
@@ -47,9 +48,11 @@ def main() -> None:
     except KeyboardInterrupt:
         logging.info("-- Bot stopped manually.")
         logging.info(INTERUPT_BANNER)
+
     except Exception as e:
         logging.critical("Fatal error in main: %s", e, exc_info=True)
         logging.info(INTERUPT_BANNER)
+
 
 if __name__ == "__main__":
     main()
