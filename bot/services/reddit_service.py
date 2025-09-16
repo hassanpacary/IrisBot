@@ -7,6 +7,7 @@ Utility functions for fetching images from Reddit posts and sending them to Disc
 
 # --- Imports ---
 import os
+from datetime import datetime
 
 # --- Third party imports ---
 import asyncpraw
@@ -51,6 +52,8 @@ async def extract_submission_data(submission) -> dict:
     """
     pattern = REGEX['youtube']['pattern']
 
+    post_created_date = datetime.fromtimestamp(submission.created_utc)
+
     # Load the subreddit object
     subreddit = submission.subreddit
     await subreddit.load()
@@ -60,7 +63,7 @@ async def extract_submission_data(submission) -> dict:
         "post_title": submission.title,
         "post_url": submission.url,
         "post_content": submission.selftext,
-        "creation_date": submission.created_utc,
+        "creation_date": post_created_date,
         "subreddit_name": subreddit.display_name,
         "author_name": getattr(submission.author, "name", "") or "",
         "subreddit_icon": subreddit.icon_img,

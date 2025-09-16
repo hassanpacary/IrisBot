@@ -1,5 +1,5 @@
 """
-fun.py
+bot/cogs/fun.py
 © by hassanpacary
 
 Cog containing fun slash commands and their logic
@@ -76,7 +76,7 @@ class FunCog(commands.Cog):
 
     @app_commands.command(
         name=COMMANDS['fun']['quoi']['slash_command'],
-        description=COMMANDS['fun']['quoi']['description']
+        description=COMMANDS['fun']['quoi']['description'],
     )
     @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def quoi_logic(self, interaction: discord.Interaction):

@@ -1,5 +1,5 @@
 """
-vocal.py
+bot/cogs/vocal.py
 © by hassanpacary
 
 Cog containing vocal slash commands and their logic
@@ -69,7 +69,7 @@ class VocalCog(commands.Cog):
                 bot_voice_client and
                 message_author_voice_state.channel == bot_voice_client.channel and
                 message.channel.id == vocal_text_id):
-            await text_to_speech(bot_voice_client, message=message)
+            #await text_to_speech(bot_voice_client, message=message)
             logging.info(f"-- {message.author} send {message.content} and was played by the bot in vocal channel")
 
         await self.bot.process_commands(message)

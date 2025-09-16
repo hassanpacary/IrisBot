@@ -1,5 +1,5 @@
 """
-events.py
+bot/cogs/events.py
 © by hassanpacary
 
 Cog containing globals events listener and their logic
@@ -11,11 +11,10 @@ import random
 
 # --- Third party imports ---
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 # --- bot modules ---
 from bot.core.config_loader import BOT, STRINGS, ON_READY_BANNER
-from bot.services.activity_service import set_bot_activity, random_activity
 
 
 #  ██████╗ ██╗      ██████╗ ██████╗  █████╗ ██╗         ███████╗██╗   ██╗███████╗███╗   ██╗████████╗███████╗
@@ -40,28 +39,11 @@ class EventsCog(commands.Cog):
     # ██████╔╝╚██████╔╝   ██║       ███████║   ██║   ██║  ██║   ██║   ███████╗
     # ╚═════╝  ╚═════╝    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝
 
-    @tasks.loop(hours=1)
-    async def status_swap(self):
-        """Background task that updates the bot's presence every hour"""
-        activity_name, activity_type, activity_state = await random_activity()
-
-        await set_bot_activity(
-            bot=self.bot,
-            activity_name=activity_name,
-            activity_type=activity_type,
-            activity_state=activity_state
-        )
-
-        logging.info(f"-- Swapped activity name: {activity_name}, type: {activity_type}, state: {activity_state}")
-
     @commands.Cog.listener()
     async def on_ready(self):
         """Event triggered when the bot is ready and connected to Discord"""
         logging.info(ON_READY_BANNER)
         logging.info(f"-- Bot connected as {self.bot.user.name}")
-
-        # Starts the background task that changes the bot's activity
-        self.status_swap.start()
 
     @commands.Cog.listener()
     async def on_resumed(self):

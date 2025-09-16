@@ -140,7 +140,7 @@ async def send_medias_response(
         )
 
 
-async def reply_with_medias(target: discord.Interaction | discord.Message, url: str):
+async def send_reply_with_submission_data(target: discord.Interaction | discord.Message, url: str):
     """
     Fetches and replies to a Reddit post by sending its associated media to Discord
 
@@ -159,8 +159,6 @@ async def reply_with_medias(target: discord.Interaction | discord.Message, url: 
 
     submission_data = await fetch_reddit_data(url=url)
     medias = submission_data['medias']
-    if not medias:
-        return
 
     # Prepare message content
     message_content = strings['reply_message_with_medias_count'].format(medias_count=len(medias))
@@ -181,13 +179,23 @@ async def reply_with_medias(target: discord.Interaction | discord.Message, url: 
         footer_text="Reddit"
     )
 
-    # --- Send responses with medias ---
-    await send_medias_response(
-        target=target,
-        medias=medias,
-        message_content=message_content,
-        message_embed=message_embed,
-    )
+    # --- Submission contains medias ---
+    if len(medias) > 0:
+        # Send responses with medias
+        await send_medias_response(
+            target=target,
+            medias=medias,
+            message_content=message_content,
+            message_embed=message_embed,
+        )
+
+    # --- Submission contains not medias ---
+    else:
+        await send_response_to_discord(
+            target=target,
+            content=message_content,
+            embed=message_embed
+        )
 
     if defer_msg:
         await defer_msg.delete()

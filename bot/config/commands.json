@@ -4,6 +4,11 @@
       "slash_command": "quoi",
       "description": "Répond 'feur'"
     },
+    "quote": {
+      "slash_command": "quote",
+      "description": "Quote le message en réponse",
+      "context_menu": "Quote"
+    },
     "roll": {
       "slash_command": "roll",
       "description": "Lance un dés pour déterminer un nombre aléatoire... Si Iris ne pipe pas le dés (Défaut 6)"

@@ -13,6 +13,8 @@ import logging
 # --- Third party imports ---
 import discord
 
+from bot.utils.strings_utils import get_string_segment
+
 
 # ██████╗ ███████╗███████╗██████╗  ██████╗ ███╗   ██╗███████╗███████╗     ██████╗ ██████╗ ███╗   ██╗███████╗████████╗██████╗ ██╗   ██╗ ██████╗████████╗ ██████╗ ██████╗
 # ██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗████╗  ██║██╔════╝██╔════╝    ██╔════╝██╔═══██╗████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║   ██║██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗
@@ -80,7 +82,7 @@ async def create_discord_embed(
         title: str = None,
         title_url: str = None,
         description: str = None,
-        date: int = None,
+        date: datetime = None,
         author: str = None,
         icon: str = None,
         fields: list[tuple] = None,
@@ -109,8 +111,7 @@ async def create_discord_embed(
     Returns:
         discord.Embed: The embed object
     """
-    timestamp = datetime.fromtimestamp(date)
-    embed = discord.Embed(color=color, title=title, url=title_url, description=description, timestamp=timestamp)
+    embed = discord.Embed(color=color, title=title, url=title_url, description=description, timestamp=date)
     embed.set_author(name=author, icon_url=icon)
 
     # Add fields if any
@@ -143,7 +144,7 @@ async def create_discord_embed(
 #  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝    ╚═╝     ╚═╝╚══════╝╚══════╝
 
 
-def create_discord_file(data: bytes, filename: str) -> discord.File:
+def create_discord_file(filename: str, data: bytes = None) -> discord.File:
     """
     Create a discord.File object from raw bytes
 
@@ -154,4 +155,8 @@ def create_discord_file(data: bytes, filename: str) -> discord.File:
     Returns:
         discord.File: A Discord-compatible file object
     """
-    return discord.File(io.BytesIO(data), filename=filename)
+    if data is None:
+        print(get_string_segment(string=filename, split_char="/", i=3))
+        return discord.File(filename, filename=get_string_segment(string=filename, split_char="/", i=3))
+    else:
+        return discord.File(io.BytesIO(data), filename=filename)
