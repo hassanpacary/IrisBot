@@ -24,6 +24,7 @@ from bot.services.quotes_service import quote_user_message
 # ╚██████╗╚██████╔╝██║ ╚████║   ██║   ███████╗██╔╝ ██╗   ██║       ██║ ╚═╝ ██║███████╗██║ ╚████║╚██████╔╝
 #  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝   ╚═╝       ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝
 
+
 @app_commands.context_menu(name=COMMANDS['fun']['quote']['context_menu'])
 @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
 async def quote_context(interaction: discord.Interaction, message: discord.Message):

@@ -13,6 +13,9 @@
     "textuel_vocal_channel": 594583967554994178,
     "quotes_channel": 896555313120047105
   },
+  "moderation": {
+    "purge_amount_max": 100
+  },
   "voice": {
     "synthesis_voice": "fr-FR-VivienneMultilingualNeural"
   }

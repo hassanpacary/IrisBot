@@ -220,7 +220,7 @@ async def get_video(
         # --- Return video if under filesize limit ---
         if os.path.getsize(tmp_out_path) <= file_size_limit:
             video = load_file(file_path=tmp_out_path, mode="rb")
-            return create_discord_file(data=video, filename=filename)
+            return await create_discord_file(data=video, filename=filename)
 
         # --- Otherwise compress video ---
         tmp_compressed_path = os.path.join(tmpdir, filename_without_ext + "_compressed.mp4")
@@ -232,4 +232,4 @@ async def get_video(
         )
 
         compressed_video = load_file(file_path=tmp_compressed_path, mode="rb")
-        return create_discord_file(data=compressed_video, filename=filename)
+        return await create_discord_file(data=compressed_video, filename=filename)

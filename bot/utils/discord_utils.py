@@ -144,7 +144,7 @@ async def create_discord_embed(
 #  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝    ╚═╝     ╚═╝╚══════╝╚══════╝
 
 
-def create_discord_file(filename: str, data: bytes = None) -> discord.File:
+async def create_discord_file(filename: str, data: bytes = None) -> discord.File:
     """
     Create a discord.File object from raw bytes
 
@@ -156,7 +156,7 @@ def create_discord_file(filename: str, data: bytes = None) -> discord.File:
         discord.File: A Discord-compatible file object
     """
     if data is None:
-        print(get_string_segment(string=filename, split_char="/", i=3))
         return discord.File(filename, filename=get_string_segment(string=filename, split_char="/", i=3))
+
     else:
         return discord.File(io.BytesIO(data), filename=filename)

@@ -17,6 +17,7 @@ from discord.ext import commands
 # --- Bot modules ---
 from bot.core.config_loader import COMMANDS, STRINGS, REGEX
 from bot.services.response_service import send_response_to_discord
+from bot.utils.discord_utils import create_discord_embed
 from bot.utils.strings_utils import matches_pattern
 
 
@@ -75,6 +76,37 @@ class FunCog(commands.Cog):
     #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
 
     @app_commands.command(
+        name=COMMANDS['fun']['avatar']['slash_command'],
+        description=COMMANDS['fun']['avatar']['description'],
+    )
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+    async def avatar_logic(self, interaction: discord.Interaction, user:discord.User):
+        """
+        Responds to the /avatar slash command
+
+        Parameters:
+            interaction (discord.Interaction): The interaction object triggered by the user
+            user (discord.User): The user whose avatar you want to retrieve
+
+        Action:
+            - Reply to the user with 'feur'
+        """
+        logging.info(f"-- {interaction.user.name} use /avatar slash command for retrieving {user.name} avatar")
+
+        avatar_embed = await create_discord_embed(
+            color=discord.Color(0x8A2387),
+            author=STRINGS['fun']['avatar_embed_author_field'].format(user=user.name),
+            icon=interaction.guild.icon.url,
+            image_url=user.display_avatar.url
+        )
+
+        await send_response_to_discord(
+            target=interaction,
+            content=STRINGS['fun']['avatar_retrieve'].format(user=user.mention),
+            embed=avatar_embed
+        )
+
+    @app_commands.command(
         name=COMMANDS['fun']['quoi']['slash_command'],
         description=COMMANDS['fun']['quoi']['description'],
     )
@@ -90,6 +122,7 @@ class FunCog(commands.Cog):
             - Reply to the user with 'feur'
         """
         logging.info(f"-- {interaction.user.name} use /quoi slash command")
+
         await send_response_to_discord(target=interaction, content=STRINGS['fun']['quoi'])
 
     @app_commands.command(
@@ -106,8 +139,10 @@ class FunCog(commands.Cog):
             sides (int): The number of sides to roll. (Default 6)
 
         Action:
-            - Sends a random number between 1 and the number of sides.
+            - Sends a random number between 1 and the number of sides
         """
+        logging.info(f"-- {interaction.user.name} use /roll slash command for dice with {sides} sides")
+
         random_number_1 = random.randint(1, sides)
         random_number_2 = random_number_1
 
@@ -123,8 +158,40 @@ class FunCog(commands.Cog):
             )
         )
 
-        logging.info(
-            f"-- {interaction.user.name} use /roll slash command for dice with {sides} sides. Result: {random_number_1}, {random_number_2}")
+    @app_commands.command(
+        name=COMMANDS['fun']['say']['slash_command'],
+        description=COMMANDS['fun']['say']['description'],
+    )
+    @app_commands.allowed_contexts(guilds=True)
+    async def say_logic(self, interaction: discord.Interaction, message: str):
+        """
+        Responds to the /say slash command
+
+        Parameters:
+            interaction (discord.Interaction): The interaction object triggered by the user
+            message (str): The message to repeat
+
+        Action:
+            - Repeat the message in chat in a detached message
+        """
+        logging.info(f"-- {interaction.user.name} use /say slash command for repeat {message}")
+
+        random_swap = random.randint(0, 1)
+
+        logging.info(f"-- {interaction.user.name} use /quoi slash command")
+        await send_response_to_discord(target=interaction, content=message, detach=True)
+
+        if random_swap:
+            await send_response_to_discord(
+                target=interaction,
+                content=STRINGS['fun']['message_repeat_with_success_sus'].format(user=interaction.user.mention)
+            )
+        else:
+            await send_response_to_discord(
+                target=interaction,
+                content=STRINGS['fun']['message_repeat_with_success'],
+                ephemeral=True
+            )
 
 
 async def setup(bot):

@@ -1,5 +1,9 @@
 {
   "fun": {
+    "avatar": {
+      "slash_command": "avatar",
+      "description": "Envoie l'avatar d'un utilisateur"
+    },
     "quoi": {
       "slash_command": "quoi",
       "description": "Répond 'feur'"
@@ -12,6 +16,16 @@
     "roll": {
       "slash_command": "roll",
       "description": "Lance un dés pour déterminer un nombre aléatoire... Si Iris ne pipe pas le dés (Défaut 6)"
+    },
+    "say": {
+      "slash_command": "say",
+      "description": "Iris répète ta phrase"
+    }
+  },
+  "moderation": {
+    "purge": {
+      "slash_command": "purge",
+      "description": "Iris supprime tes secrets les plus sombres du salon"
     }
   },
   "reddit": {

@@ -41,6 +41,7 @@ class VocalCog(commands.Cog):
     # ███████╗ ╚████╔╝ ███████╗██║ ╚████║   ██║   ███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
     # ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
 
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """
@@ -56,6 +57,7 @@ class VocalCog(commands.Cog):
         this event converts what users send in a text channel,
          into audio played by the bot connected in a voice channel
         """
+        """
         vocal_text_id = BOT['channels']['textuel_vocal_channel']
 
         # --- Ignore bot message ---
@@ -69,10 +71,11 @@ class VocalCog(commands.Cog):
                 bot_voice_client and
                 message_author_voice_state.channel == bot_voice_client.channel and
                 message.channel.id == vocal_text_id):
-            #await text_to_speech(bot_voice_client, message=message)
+            await text_to_speech(bot_voice_client, message=message)
             logging.info(f"-- {message.author} send {message.content} and was played by the bot in vocal channel")
 
         await self.bot.process_commands(message)
+        """
 
     #  ██████╗ ██████╗ ███╗   ███╗███╗   ███╗ █████╗ ███╗   ██╗██████╗ ███████╗    ██╗      ██████╗  ██████╗ ██╗ ██████╗
     # ██╔════╝██╔═══██╗████╗ ████║████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝    ██║     ██╔═══██╗██╔════╝ ██║██╔════╝

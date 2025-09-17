@@ -1,6 +1,7 @@
 {
   "system": {
-    "progress": "> *Iris réfléchit*"
+    "progress": "> *Iris réfléchit*",
+    "guild": "wbz"
   },
   "event": {
     "status_activity": {
@@ -47,7 +48,16 @@
     "quote_dm_source": "Message privé",
     "quote_origine": "Divulgé par {user}",
     "quote_response": "Pris en flagrant délit Eh-Nah :camera_with_flash:",
-    "quote_month_result": "**Fin des festivités de {month} !**\n\nBravo à {discloser} pour avoir montrer une nouvelle facette de {author} que l'on ignorait tous :monkey:"
+    "quote_month_result": "**Fin des festivités de {month} !**\n\nBravo à {discloser} pour avoir montrer une nouvelle facette de {author} que l'on ignorait tous :monkey:",
+    "message_repeat_with_success": "Tout a été répété mot pour mot :dog2:",
+    "message_repeat_with_success_sus": "Tout a été répété d'après les mots de {user}",
+    "avatar_retrieve": "Voilà {user}, il est beau hein !",
+    "avatar_embed_author_field": "Avatar de {user}"
+  },
+  "moderation": {
+    "amount_too_high": "T'as tant de chose que ça à cacher ? Je ne peux pas purger plus de {max} messages",
+    "not_permission": "T'es qui toi ? T'as aucun droit ici",
+    "purge_ok": "J'ai supprimée {amount} messages"
   },
   "reddit": {
     "reply_message_with_medias_count": "Tiens, voilà toutes les info du post Reddit :pig:",
