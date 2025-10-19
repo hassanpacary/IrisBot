@@ -1,5 +1,5 @@
 """
-bot/services/video_service.py
+bot/services/reddit/video_compressor.py
 © by hassanpacary
 
 Utility functions for video downloader, mux and compression.
@@ -21,15 +21,21 @@ from bot.utils.discord_utils import create_discord_file
 from bot.utils.files_utils import load_file, write_file
 
 
+# pylint: disable=line-too-long
 # ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗     ██╗   ██╗██╗██████╗ ███████╗ ██████╗
 # ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗    ██║   ██║██║██╔══██╗██╔════╝██╔═══██╗
 # ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║    ██║   ██║██║██║  ██║█████╗  ██║   ██║
 # ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║    ╚██╗ ██╔╝██║██║  ██║██╔══╝  ██║   ██║
 # ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝     ╚████╔╝ ██║██████╔╝███████╗╚██████╔╝
 # ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝       ╚═══╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝
+# pylint: enable=line-too-long
 
 
-async def download_video_and_audio_source(url: str, tmpdir: str, filename: str) -> tuple[str, str | None]:
+async def _download_video_and_audio_source(
+        url: str,
+        tmpdir: str,
+        filename: str
+) -> tuple[str, str | None]:
     """
     Downloads the Reddit video and optional audio to temporary files
 
@@ -59,7 +65,7 @@ async def download_video_and_audio_source(url: str, tmpdir: str, filename: str) 
     return tmp_video_path, tmp_audio_path
 
 
-async def merge_video_audio_in_one_file(
+async def _merge_video_audio_in_one_file(
         video_path: str,
         audio_path: str | None,
         output_path: str):
@@ -97,15 +103,17 @@ async def merge_video_audio_in_one_file(
         raise RuntimeError(f'FFmpeg merge error: {stderr.decode()}')
 
 
+# pylint: disable=line-too-long
 #  ██████╗ ██████╗ ███╗   ███╗██████╗ ██████╗ ███████╗███████╗███████╗    ██╗   ██╗██╗██████╗ ███████╗ ██████╗
 # ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝    ██║   ██║██║██╔══██╗██╔════╝██╔═══██╗
 # ██║     ██║   ██║██╔████╔██║██████╔╝██████╔╝█████╗  ███████╗███████╗    ██║   ██║██║██║  ██║█████╗  ██║   ██║
 # ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██╔══██╗██╔══╝  ╚════██║╚════██║    ╚██╗ ██╔╝██║██║  ██║██╔══╝  ██║   ██║
 # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ██║  ██║███████╗███████║███████║     ╚████╔╝ ██║██████╔╝███████╗╚██████╔╝
 #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝      ╚═══╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝
+# pylint: enable=line-too-long
 
 
-def get_video_duration(video_path: str) -> float:
+def _get_video_duration(video_path: str) -> float:
     """
     Retrieves the duration of a video file using ffprobe
 
@@ -134,7 +142,7 @@ def get_video_duration(video_path: str) -> float:
         raise RuntimeError(f"Failed to parse video duration: {result.stdout}") from e
 
 
-async def compress_video(
+async def _compress_video(
         input_path: str,
         output_path: str,
         filesize_limit: int):
@@ -147,7 +155,7 @@ async def compress_video(
         filesize_limit (int): Guild filesize limit
     """
     # Calcul the target video bitrate
-    duration = get_video_duration(video_path=input_path)
+    duration = _get_video_duration(video_path=input_path)
     audio_bitrate_bps = 128_000
     target_total_bitrate_bps = int((filesize_limit * 8) / duration)
     target_video_bitrate_bps = max(10_000, target_total_bitrate_bps - audio_bitrate_bps)
@@ -205,13 +213,13 @@ async def get_video(
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_out_path = os.path.join(tmpdir, filename_without_ext + "_merged.mp4")
 
-        video_path, audio_path = await download_video_and_audio_source(
+        video_path, audio_path = await _download_video_and_audio_source(
             url=url,
             tmpdir=tmpdir,
             filename=filename
         )
 
-        await merge_video_audio_in_one_file(
+        await _merge_video_audio_in_one_file(
             video_path=video_path,
             audio_path=audio_path,
             output_path=tmp_out_path
@@ -225,7 +233,7 @@ async def get_video(
         # --- Otherwise compress video ---
         tmp_compressed_path = os.path.join(tmpdir, filename_without_ext + "_compressed.mp4")
 
-        await compress_video(
+        await _compress_video(
             input_path=tmp_out_path,
             output_path=tmp_compressed_path,
             filesize_limit=file_size_limit

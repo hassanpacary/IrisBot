@@ -12,8 +12,11 @@ from discord import app_commands
 from discord.ext import commands
 
 # --- Bot modules ---
-from bot.core.config_loader import BOT, COMMANDS, STRINGS
-from bot.utils.discord_utils import send_response_to_discord
+from bot.core.config_loader import COMMANDS
+from bot.services.moderation.moderation_service import (
+    log_deleted_message,
+    log_edited_message,
+    purge_messages)
 
 
 # ██████╗ ██╗███████╗ ██████╗ ██████╗ ██████╗ ██████╗     ███╗   ███╗ ██████╗ ██████╗
@@ -31,12 +34,58 @@ class ModerationCog(commands.Cog):
         """Initialize the cog with a reference to the bot."""
         self.bot = bot
 
+    # ██╗      ██████╗  ██████╗
+    # ██║     ██╔═══██╗██╔════╝
+    # ██║     ██║   ██║██║  ███╗
+    # ██║     ██║   ██║██║   ██║
+    # ███████╗╚██████╔╝╚██████╔╝
+    # ╚══════╝ ╚═════╝  ╚═════╝
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: discord.Message):
+        """
+        Event listener that triggers whenever a message is deleted
+
+        Parameters:
+            message (discord.Message): The message who trigger the listener
+
+        Actions:
+            - Log the deleted message
+        """
+        logging.info("-- a message has just been deleted")
+        await log_deleted_message(ctx=self.bot, message=message)
+
+    @commands.Cog.listener()
+    async def on_message_edit(
+            self,
+            message_before: discord.Message,
+            message_after: discord.Message
+    ):
+        """
+        Event listener that triggers whenever a message is edited
+
+        Parameters:
+            message_before (discord.Message): The message before the edition
+            message_after (discord.Message): The message after the edition
+
+        Actions:
+            - Log the edited message
+        """
+        logging.info("-- a message has just been edited")
+        await log_edited_message(
+            ctx=self.bot,
+            message_before=message_before,
+            message_after=message_after
+        )
+
+    # pylint: disable=line-too-long
     #  ██████╗ ██████╗ ███╗   ███╗███╗   ███╗ █████╗ ███╗   ██╗██████╗ ███████╗    ██╗      ██████╗  ██████╗ ██╗ ██████╗
     # ██╔════╝██╔═══██╗████╗ ████║████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝    ██║     ██╔═══██╗██╔════╝ ██║██╔════╝
     # ██║     ██║   ██║██╔████╔██║██╔████╔██║███████║██╔██╗ ██║██║  ██║███████╗    ██║     ██║   ██║██║  ███╗██║██║
     # ██║     ██║   ██║██║╚██╔╝██║██║╚██╔╝██║██╔══██║██║╚██╗██║██║  ██║╚════██║    ██║     ██║   ██║██║   ██║██║██║
     # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
     #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
+    # pylint: enable=line-too-long
 
     @app_commands.command(
         name=COMMANDS['moderation']['purge']['slash_command'],
@@ -51,39 +100,12 @@ class ModerationCog(commands.Cog):
         Action:
             - purge a certains amount of messages in chat
         """
-        logging.info(f"-- {interaction.user.name} use /purge slash command for delete {amount} messages in chat")
-
-        amount_max = BOT['moderation']['purge_amount_max']
-        responses = STRINGS['moderation']
-
-        # --- Not manage_messages permission ---
-        if not interaction.user.guild_permissions.manage_messages:
-            await send_response_to_discord(
-                target=interaction,
-                content=responses['not_permission'],
-                ephemeral=True
-            )
-            return
-
-        # --- Messages amount is too high ---
-        if amount > amount_max:
-            await send_response_to_discord(
-                target=interaction,
-                content=responses['amount_too_high'].format(max=amount_max),
-                ephemeral=True
-            )
-
-        # --- Purge chat ---
-        else:
-            await interaction.response.defer(ephemeral=True) # type: ignore
-
-            await interaction.channel.purge(limit=amount)
-
-            await send_response_to_discord(
-                target=interaction,
-                content=responses['purge_ok'].format(amount=str(amount)),
-                ephemeral=True
-            )
+        logging.info(
+            "-- %s use /purge slash command for delete %s messages in chat",
+            interaction.user.name,
+            amount
+        )
+        await purge_messages(ctx=interaction, amount=amount)
 
 
 async def setup(bot):

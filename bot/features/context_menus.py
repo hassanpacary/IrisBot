@@ -14,15 +14,23 @@ from discord import app_commands
 
 # --- Bot modules ---
 from bot.core.config_loader import COMMANDS
-from bot.services.quotes_service import quote_user_message
+from bot.services.fun.quote_component import quote_user_message
 
 
+# pylint: disable=line-too-long
 #  ██████╗ ██████╗ ███╗   ██╗████████╗███████╗██╗  ██╗████████╗    ███╗   ███╗███████╗███╗   ██╗██╗   ██╗
 # ██╔════╝██╔═══██╗████╗  ██║╚══██╔══╝██╔════╝╚██╗██╔╝╚══██╔══╝    ████╗ ████║██╔════╝████╗  ██║██║   ██║
 # ██║     ██║   ██║██╔██╗ ██║   ██║   █████╗   ╚███╔╝    ██║       ██╔████╔██║█████╗  ██╔██╗ ██║██║   ██║
 # ██║     ██║   ██║██║╚██╗██║   ██║   ██╔══╝   ██╔██╗    ██║       ██║╚██╔╝██║██╔══╝  ██║╚██╗██║██║   ██║
 # ╚██████╗╚██████╔╝██║ ╚████║   ██║   ███████╗██╔╝ ██╗   ██║       ██║ ╚═╝ ██║███████╗██║ ╚████║╚██████╔╝
 #  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚══════╝╚═╝  ╚═╝   ╚═╝       ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝
+# pylint: enable=line-too-long
+
+
+def setup(ctx):
+    """Load all context_menus commands"""
+    ctx.tree.add_command(quote_context)
+    logging.info("-- Loaded quote_context command in context menu successfully")
 
 
 @app_commands.context_menu(name=COMMANDS['fun']['quote']['context_menu'])
@@ -38,10 +46,5 @@ async def quote_context(interaction: discord.Interaction, message: discord.Messa
     Action:
         - Quote the message in the quotes channel for pins it
     """
+    logging.info("-- New quoted user from context menu")
     await quote_user_message(interaction, message)
-    logging.info(f"-- New quoted user from context menu")
-
-
-async def setup(bot):
-    """Adds context menu commands to the given bot"""
-    bot.tree.add_command(quote_context)

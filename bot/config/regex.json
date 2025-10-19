@@ -1,4 +1,7 @@
 {
+  "database": {
+    "pattern": "--\\s*name:\\s*(\\w+)"
+  },
   "quoi": {
     "pattern": "^(.*?\\bquoi\\b)\\W*$"
   },

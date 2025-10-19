@@ -49,9 +49,11 @@ def main() -> None:
         logging.info("-- Bot stopped manually.")
         logging.info(INTERUPT_BANNER)
 
-    except Exception as e:
-        logging.critical("Fatal error in main: %s", e, exc_info=True)
-        logging.info(INTERUPT_BANNER)
+    except OSError as e:
+        logging.critical("Erreur OS : %s", e, exc_info=True)
+
+    except asyncio.CancelledError:
+        logging.info("Tâches annulées proprement.")
 
 
 if __name__ == "__main__":

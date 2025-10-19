@@ -89,6 +89,28 @@ def get_string_segment(string: str, split_char: str, i: int) -> str | None:
         str | None: The segment at the given index, or None if it doesn't exist
     """
     path_segments = urlparse(string).path.split(split_char)
+
     if 0 <= i < len(path_segments):
         return path_segments[i]
     return None
+
+
+def get_string_segments(string: str, split_regex: str) -> dict[str, str]:
+    """
+    Extract all segments from a string
+
+    Parameters:
+        string (str): The string to parse
+        split_regex (str): The regex pattern to match against ffor the split
+
+    Returns:
+        dict[str, str]: All segments in the string
+    """
+    segments: dict[str, str] = {}
+    parts = re.split(split_regex, string)
+
+    for i in range(1, len(parts), 2):
+        name, query = parts[i], parts[i + 1].strip()
+        segments[name] = query
+
+    return segments

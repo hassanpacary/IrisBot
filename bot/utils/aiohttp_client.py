@@ -54,7 +54,12 @@ class AioHttpClient:
     # ╚██████╔╝███████╗   ██║       ██║  ██║██║ ╚████║██████╔╝    ██║     ╚██████╔╝███████║   ██║
     #  ╚═════╝ ╚══════╝   ╚═╝       ╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝     ╚═╝      ╚═════╝ ╚══════╝   ╚═╝
 
-    async def get(self, url: str, params: Optional[Dict[str, Any]] = None, **kwargs) -> aiohttp.ClientResponse:
+    async def get(
+            self,
+            url: str,
+            params: Optional[Dict[str, Any]] = None,
+            **kwargs
+    ) -> aiohttp.ClientResponse:
         """
         Send an asynchronous HTTP GET request
 
@@ -78,7 +83,11 @@ class AioHttpClient:
             return resp
 
         except aiohttp.ClientError as e:
-            logging.error(f"GET request failed: {url}.\n{e}")
+            logging.error(
+                "GET request failed: %s.\n%s",
+                url,
+                e
+            )
             raise
 
     async def post(self, url: str, json: Optional[Dict[str, Any]] = None, data: Any = None,
@@ -107,7 +116,11 @@ class AioHttpClient:
             return resp
 
         except aiohttp.ClientError as e:
-            logging.error(f"POST request failed: {url}.\n{e}")
+            logging.error(
+                "POST request failed: %s.\n%s",
+                url,
+                e
+            )
             raise
 
     #  █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
@@ -133,11 +146,19 @@ class AioHttpClient:
                 if resp.status == 200:
                     return await resp.read()
 
-                logging.warning(f"Failed to download bytes from {url} (status {resp.status})")
+                logging.warning(
+                    "Failed to download bytes from %s (status %s)",
+                    url,
+                    resp.status
+                )
                 return None
 
         except aiohttp.ClientError as e:
-            logging.error(f"Download request failed: {url}.\n{e}")
+            logging.error(
+                "Download request failed: %s.\n%s",
+                url,
+                e
+            )
             return None
 
     async def close(self):

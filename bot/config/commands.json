@@ -1,16 +1,30 @@
 {
-  "fun": {
-    "avatar": {
-      "slash_command": "avatar",
-      "description": "Envoie l'avatar d'un utilisateur"
+  "guild": {
+    "load": {
+      "slash_command": "load",
+      "description": "Charge les cogs de Iris"
     },
+    "reload": {
+      "slash_command": "reload",
+      "description": "Re-charge les cogs de Iris"
+    },
+    "send": {
+      "slash_command": "send",
+      "description": "Envoie un message avec Iris"
+    },
+    "unload": {
+      "slash_command": "unload",
+      "description": "Décharge les cogs de Iris"
+    }
+  },
+  "fun": {
     "quoi": {
       "slash_command": "quoi",
       "description": "Répond 'feur'"
     },
     "quote": {
       "slash_command": "quote",
-      "description": "Quote le message en réponse",
+      "description": "Quote un utilisateur (avec un peu plus de context)",
       "context_menu": "Quote"
     },
     "roll": {
@@ -20,6 +34,12 @@
     "say": {
       "slash_command": "say",
       "description": "Iris répète ta phrase"
+    }
+  },
+  "level": {
+    "leaderboard": {
+      "slash_command": "leaderboard",
+      "description": "Classements des membres du discord"
     }
   },
   "moderation": {
@@ -32,6 +52,16 @@
     "waf": {
       "slash_command": "waf",
       "description": "Iris répond en envoyant les différents medias contenues dans le post"
+    }
+  },
+  "social": {
+    "avatar": {
+      "slash_command": "avatar",
+      "description": "Envoie l'avatar d'un utilisateur"
+    },
+    "profile": {
+      "slash_command": "profile",
+      "description": "Affiche ton profil ou celui d'un autre membre"
     }
   },
   "vocal": {

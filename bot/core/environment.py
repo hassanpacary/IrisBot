@@ -20,7 +20,7 @@ from dotenv import load_dotenv, find_dotenv
 # ╚══════╝╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝
 
 
-def load_env() -> None:
+def load_env():
     """Load environment variables from the .env file"""
     dotenv_path = find_dotenv()
 
@@ -47,7 +47,10 @@ def get_env_var(var: str) -> str:
 
     # --- Environment variable not found ---
     if not env_variable:
-        logging.error(f"Required environment variable '{var}' not found.")
+        logging.error(
+            "Required environment variable '%s' not found.",
+            var
+        )
         sys.exit(1)
 
     return env_variable

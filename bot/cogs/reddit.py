@@ -14,8 +14,8 @@ from discord import app_commands
 from discord.ext import commands
 
 # --- Bot modules ---
-from bot.core.config_loader import COMMANDS, STRINGS, REGEX
-from bot.services.response_service import send_response_to_discord, send_reply_with_submission_data
+from bot.core.config_loader import COMMANDS, REGEX
+from bot.services.reddit.reddit_service import send_response_with_post_data
 from bot.utils.strings_utils import matches_pattern, regex_search
 
 
@@ -65,17 +65,24 @@ class RedditCog(commands.Cog):
         pattern = REGEX['reddit']['pattern']
 
         if matches_pattern(pattern, message.content):
-            logging.info(f"-- {message.author} said: {message.content} matched with 'reddit url' pattern")
-            await send_reply_with_submission_data(target=message, url=regex_search(pattern, message.content))
+            logging.info(
+                "-- %s said: %s matched with 'reddit url' pattern",
+                message.author,
+                message.content
+            )
+            url = regex_search(pattern, message.content)
+            await send_response_with_post_data(ctx=message, url=url)
 
         await self.bot.process_commands(message)
 
+    # pylint: disable=line-too-long
     #  ██████╗ ██████╗ ███╗   ███╗███╗   ███╗ █████╗ ███╗   ██╗██████╗ ███████╗    ██╗      ██████╗  ██████╗ ██╗ ██████╗
     # ██╔════╝██╔═══██╗████╗ ████║████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝    ██║     ██╔═══██╗██╔════╝ ██║██╔════╝
     # ██║     ██║   ██║██╔████╔██║██╔████╔██║███████║██╔██╗ ██║██║  ██║███████╗    ██║     ██║   ██║██║  ███╗██║██║
     # ██║     ██║   ██║██║╚██╔╝██║██║╚██╔╝██║██╔══██║██║╚██╗██║██║  ██║╚════██║    ██║     ██║   ██║██║   ██║██║██║
     # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
     #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
+    # pylint: enable=line-too-long
 
     @app_commands.command(
         name=COMMANDS['reddit']['waf']['slash_command'],
@@ -98,16 +105,12 @@ class RedditCog(commands.Cog):
         The response of command contains an embed with all the post's information,
         followed by the post's various medias
         """
-        logging.info(f"-- {interaction.user.name} use /waf slash command with {url} url")
-
-        responses_strings = STRINGS['reddit']
-        pattern = REGEX['reddit']['pattern']
-
-        if not matches_pattern(pattern, url):
-            await send_response_to_discord(target=interaction, content=responses_strings['wrong_url'], ephemeral=True)
-            return
-
-        await send_reply_with_submission_data(target=interaction, url=regex_search(pattern, url))
+        logging.info(
+            "-- %s use /waf slash command with %s url",
+            interaction.user.name,
+            url
+        )
+        await send_response_with_post_data(ctx=interaction, url=url)
 
 
 async def setup(bot):

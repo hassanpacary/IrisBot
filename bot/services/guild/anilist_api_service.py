@@ -1,5 +1,5 @@
 """
-anilist_service.py
+bot/services/bot/anilist_api_service.py
 © by hassanpacary
 
 Utility functions for fetching data from AniList API
@@ -14,12 +14,14 @@ from bot.utils.aiohttp_client import aiohttp_client
 from bot.utils.files_utils import load_file, load_yaml
 
 
+# pylint: disable=line-too-long
 #  █████╗ ███╗   ██╗██╗██╗     ██╗███████╗████████╗    ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗
 # ██╔══██╗████╗  ██║██║██║     ██║██╔════╝╚══██╔══╝    ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝
 # ███████║██╔██╗ ██║██║██║     ██║███████╗   ██║       ███████╗█████╗  ██████╔╝██║   ██║██║██║     █████╗
 # ██╔══██║██║╚██╗██║██║██║     ██║╚════██║   ██║       ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║██║     ██╔══╝
 # ██║  ██║██║ ╚████║██║███████╗██║███████║   ██║       ███████║███████╗██║  ██║ ╚████╔╝ ██║╚██████╗███████╗
 # ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚══════╝╚═╝╚══════╝   ╚═╝       ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝
+# pylint: enable=line-too-long
 
 
 async def load_api_endpoint() -> tuple[str, dict]:

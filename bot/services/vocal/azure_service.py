@@ -28,7 +28,7 @@ from bot.utils.strings_utils import sanitize_text
 # ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝    ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝
 
 
-async def generate_speech_bytes(text: str) -> bytes:
+async def _generate_speech_bytes(text: str) -> bytes:
     """
     Generate speech audio bytes from text using Azure Text-to-Speech
 
@@ -43,18 +43,22 @@ async def generate_speech_bytes(text: str) -> bytes:
     Returns:
         bytes: The speech audio in WAV format. Returns empty bytes if credentials are missing
     """
+    azure_key = os.getenv('AZURE_KEY')
+    azure_endpoint = os.getenv('AZURE_ENDPOINT')
+
+    synthesis_voice = BOT['voice']['synthesis_voice']
 
     # --- Credentials are missing ---
-    if not os.getenv('AZURE_KEY') or not os.getenv('AZURE_ENDPOINT'):
+    if not azure_key or not azure_endpoint:
         logging.warning("Azure credentials not set")
         return b""
 
     # Configure speech SDK
     speech_config = speechsdk.SpeechConfig(
-        subscription=os.getenv('AZURE_KEY'),
-        endpoint=os.getenv('AZURE_ENDPOINT')
+        subscription=azure_key,
+        endpoint=azure_endpoint
     )
-    speech_config.speech_synthesis_voice_name = BOT['voice']['synthesis_voice']
+    speech_config.speech_synthesis_voice_name = synthesis_voice
 
     # Write the generated speech to a WAV file
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
@@ -67,12 +71,12 @@ async def generate_speech_bytes(text: str) -> bytes:
         return tmp_file.read()
 
 
-async def play_audio_bytes(voice_client: discord.VoiceClient, audio_bytes: bytes):
+async def _play_audio_bytes(ctx: discord.VoiceClient, audio_bytes: bytes):
     """
     Play audio from raw bytes in a Discord voice channel using a temporary file
 
     Parameters:
-        voice_client (discord.VoiceClient): The voice client connected to the user's voice channel
+        ctx (discord.VoiceClient): The voice client connected to the user's voice channel
         audio_bytes (bytes): Raw audio data in WAV format
 
     Actions:
@@ -82,16 +86,16 @@ async def play_audio_bytes(voice_client: discord.VoiceClient, audio_bytes: bytes
         tmp_file.write(audio_bytes)
         tmp_file.flush()
 
-        if not voice_client.is_playing():
-            voice_client.play(FFmpegPCMAudio(source=tmp_file.name))
+        if not ctx.is_playing():
+            ctx.play(FFmpegPCMAudio(source=tmp_file.name))
 
 
-async def text_to_speech(voice_client: discord.VoiceClient, message: discord.Message):
+async def text_to_speech(ctx: discord.VoiceClient, message: discord.Message):
     """
     Converts a Discord message's text into speech and plays it in the specified voice channel
 
     Parameters:
-        voice_client (discord.VoiceClient): The voice client connected to the user's voice channel
+        ctx (discord.VoiceClient): The voice client connected to the user's voice channel
         message (discord.Message): The Discord message containing the text to convert
 
     Actions:
@@ -99,7 +103,7 @@ async def text_to_speech(voice_client: discord.VoiceClient, message: discord.Mes
         - Generates speech audio bytes from the cleaned text using a TTS service
         - Plays the generated audio in the given Discord voice client
     """
-    text = sanitize_text(message.content)
+    text = sanitize_text(text=message.content)
 
-    audio_bytes = await generate_speech_bytes(text)
-    await play_audio_bytes(voice_client, audio_bytes)
+    audio_bytes = await _generate_speech_bytes(text=text)
+    await _play_audio_bytes(ctx=ctx, audio_bytes=audio_bytes)

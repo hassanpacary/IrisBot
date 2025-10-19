@@ -14,9 +14,9 @@ from discord import app_commands
 from discord.ext import commands
 
 # --- Bot modules ---
-from bot.core.config_loader import BOT, COMMANDS, STRINGS
-from bot.services.azure_service import text_to_speech
-from bot.utils.discord_utils import send_response_to_discord
+from bot.core.config_loader import BOT, COMMANDS
+from bot.services.vocal.azure_service import text_to_speech
+from bot.services.vocal.vocal_service import join_channel, disconnect_channel
 
 
 #  ██████╗██╗  ██╗ █████╗ ████████╗██████╗  ██████╗ ████████╗
@@ -57,32 +57,34 @@ class VocalCog(commands.Cog):
         this event converts what users send in a text channel,
          into audio played by the bot connected in a voice channel
         """
-        """
-        vocal_text_id = BOT['channels']['textuel_vocal_channel']
+        channel_id = BOT['channels']['tts']
 
         # --- Ignore bot message ---
         if message.author == self.bot.user:
             return
 
-        message_author_voice_state = message.author.voice
-        bot_voice_client = discord.utils.get(self.bot.voice_clients, guild=message.guild)
+        bot_voice = discord.utils.get(self.bot.voice_clients, guild=message.guild)
+        if bot_voice and message.channel.id == channel_id:
+            author_voice = message.author.voice
 
-        if (message_author_voice_state and
-                bot_voice_client and
-                message_author_voice_state.channel == bot_voice_client.channel and
-                message.channel.id == vocal_text_id):
-            await text_to_speech(bot_voice_client, message=message)
-            logging.info(f"-- {message.author} send {message.content} and was played by the bot in vocal channel")
+            if author_voice and author_voice.channel == bot_voice.channel:
+                logging.info(
+                    "-- %s send %s and was played by the bot in vocal channel",
+                    message.author.name,
+                    message.content
+                )
+                await text_to_speech(ctx=bot_voice, message=message)
 
         await self.bot.process_commands(message)
-        """
 
+    # pylint: disable=line-too-long
     #  ██████╗ ██████╗ ███╗   ███╗███╗   ███╗ █████╗ ███╗   ██╗██████╗ ███████╗    ██╗      ██████╗  ██████╗ ██╗ ██████╗
     # ██╔════╝██╔═══██╗████╗ ████║████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝    ██║     ██╔═══██╗██╔════╝ ██║██╔════╝
     # ██║     ██║   ██║██╔████╔██║██╔████╔██║███████║██╔██╗ ██║██║  ██║███████╗    ██║     ██║   ██║██║  ███╗██║██║
     # ██║     ██║   ██║██║╚██╔╝██║██║╚██╔╝██║██╔══██║██║╚██╗██║██║  ██║╚════██║    ██║     ██║   ██║██║   ██║██║██║
     # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
     #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
+    # pylint: enable=line-too-long
 
     @app_commands.command(
         name=COMMANDS['vocal']['join']['slash_command'],
@@ -101,49 +103,12 @@ class VocalCog(commands.Cog):
             - If the bot is connected to a different voice channel, moves the bot
             - If the bot is not connected, joins the user's voice channel
         """
-        responses_strings = STRINGS['vocal']
-
-        user = interaction.user
-        bot_voice_client = discord.utils.get(self.bot.voice_clients, guild=interaction.guild)
-
-        # --- User is not connected in vocal channel ---
-        if not user.voice or not user.voice.channel:
-            await send_response_to_discord(
-                target=interaction,
-                content=responses_strings['user_not_connected'],
-                ephemeral=True
-            )
-            return
-
-        # --- Bot is already connected in vocal channel ---
-        if bot_voice_client is not None and bot_voice_client.channel == user.voice.channel:
-            await send_response_to_discord(
-                target=interaction,
-                content=responses_strings['bot_already_connected'],
-                ephemeral=True
-            )
-            return
-
-        # --- Bot is not in the same vocal channel of the user ---
-        if bot_voice_client is not None and bot_voice_client.channel != user.voice.channel:
-            await send_response_to_discord(
-                target=interaction,
-                content=responses_strings['bot_change_channel'],
-                ephemeral=True
-            )
-            logging.info(f"-- {interaction.message.author} use /join slash command. The bot has changed channel")
-            await bot_voice_client.move_to(user.voice.channel)
-            return
-
-        # --- Else connect the bot in same vocal channel as the user
-        await send_response_to_discord(
-            target=interaction,
-            content=responses_strings['bot_connect_with_success'],
-            ephemeral=True
+        logging.info(
+            "-- %s use /join slash command",
+            interaction.user.name
         )
-
-        logging.info(f"-- {interaction.user.name} use /join slash command. The bot connect to channel")
-        await user.voice.channel.connect()
+        bot_voice = discord.utils.get(self.bot.voice_clients, guild=interaction.guild)
+        await join_channel(ctx=interaction, bot_voice=bot_voice)
 
     @app_commands.command(
         name=COMMANDS['vocal']['disconnect']['slash_command'],
@@ -160,28 +125,11 @@ class VocalCog(commands.Cog):
             - If the bot is not connected, sends an ephemeral message
             - If the bot is connected, disconnects from the voice channel
         """
-        responses_strings = STRINGS['vocal']
-
-        voice_client = interaction.guild.voice_client
-
-        # --- Bot is not connected ---
-        if not voice_client or not voice_client.is_connected():  # type: ignore
-            await send_response_to_discord(
-                target=interaction,
-                content=responses_strings['bot_is_not_connected'],
-                ephemeral=True
-            )
-            return
-
-        # --- Else disconnect the bot ---
-        await send_response_to_discord(
-            target=interaction,
-            content=responses_strings['bot_disconnected_with_success'],
-            ephemeral=True
+        logging.info(
+            "-- %s use /disconnect slash command",
+            interaction.user.name
         )
-
-        logging.info(f"-- {interaction.user.name} use /disconnect slash command. the bot has disconnected from channel")
-        await voice_client.disconnect(force=True)
+        await disconnect_channel(ctx=interaction)
 
 
 async def setup(bot):

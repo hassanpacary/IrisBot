@@ -8,10 +8,24 @@
     "voice_states": false
   },
   "channels": {
-    "welcome_channel_id": 594579103806390315,
-    "goodbye_channel_id": 594579103806390315,
-    "textuel_vocal_channel": 594583967554994178,
-    "quotes_channel": 896555313120047105
+    "quotes": 896555313120047105,
+    "goodbye": 594579103806390315,
+    "log": 1417957745293918329,
+    "tts": 594583967554994178,
+    "welcome": 594579103806390315
+  },
+  "color": {
+    "fun": "FDC830",
+    "moderation": "E94057",
+    "reddit": "FF4500",
+    "social": "8A2387"
+  },
+  "fun": {
+    "reaction_for_quote": "📸"
+  },
+  "level": {
+    "level_up_calcul": "(next_level+1) * (1.25 ** (level-1))",
+    "random_xp_max": 3
   },
   "moderation": {
     "purge_amount_max": 100

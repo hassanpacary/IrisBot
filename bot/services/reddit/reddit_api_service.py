@@ -1,5 +1,5 @@
 """
-bot/services/reddit_service.py
+bot/services/reddit/reddit_service.py
 © by hassanpacary
 
 Utility functions for fetching images from Reddit posts and sending them to Discord
@@ -18,15 +18,17 @@ from bot.utils.aiohttp_client import aiohttp_client
 from bot.utils.strings_utils import matches_pattern
 
 
+# pylint: disable=line-too-long
 # ██████╗ ███████╗██████╗ ██████╗ ██╗████████╗    ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗
 # ██╔══██╗██╔════╝██╔══██╗██╔══██╗██║╚══██╔══╝    ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝
 # ██████╔╝█████╗  ██║  ██║██║  ██║██║   ██║       ███████╗█████╗  ██████╔╝██║   ██║██║██║     █████╗
 # ██╔══██╗██╔══╝  ██║  ██║██║  ██║██║   ██║       ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║██║     ██╔══╝
 # ██║  ██║███████╗██████╔╝██████╔╝██║   ██║       ███████║███████╗██║  ██║ ╚████╔╝ ██║╚██████╗███████╗
 # ╚═╝  ╚═╝╚══════╝╚═════╝ ╚═════╝ ╚═╝   ╚═╝       ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝
+# pylint: enable=line-too-long
 
 
-def create_reddit_client() -> asyncpraw.Reddit:
+def _create_reddit_client() -> asyncpraw.Reddit:
     """
     Creates and returns an asyncpraw Reddit client using environment variables
 
@@ -40,7 +42,7 @@ def create_reddit_client() -> asyncpraw.Reddit:
     )
 
 
-async def extract_submission_data(submission) -> dict:
+async def _extract_submission_data(submission) -> dict:
     """
     Extracts data from submission data with media URLs from a Reddit submission
 
@@ -108,9 +110,9 @@ async def fetch_reddit_data(url: str) -> dict:
     """
 
     # --- Create Reddit client ---
-    reddit_client = create_reddit_client()
+    reddit_client = _create_reddit_client()
 
     submission = await reddit_client.submission(url=url)
-    submission_data = await extract_submission_data(submission=submission)
+    submission_data = await _extract_submission_data(submission=submission)
 
     return submission_data

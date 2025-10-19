@@ -7,7 +7,6 @@ Cog containing fun slash commands and their logic
 
 # --- Imports ---
 import logging
-import random
 
 # --- Third party imports ---
 import discord
@@ -15,9 +14,10 @@ from discord import app_commands
 from discord.ext import commands
 
 # --- Bot modules ---
-from bot.core.config_loader import COMMANDS, STRINGS, REGEX
-from bot.services.response_service import send_response_to_discord
-from bot.utils.discord_utils import create_discord_embed
+from bot.core.config_loader import BOT, COMMANDS, STRINGS, REGEX
+from bot.services.fun.fun_service import roll_dice, repeat_message
+from bot.services.fun.quote_component import quote_user_with_screen, quote_user_with_reaction
+from bot.utils.discord_utils import send_response_to_discord
 from bot.utils.strings_utils import matches_pattern
 
 
@@ -36,12 +36,12 @@ class FunCog(commands.Cog):
         """Initialize the cog with a reference to the bot."""
         self.bot = bot
 
-    # ███████╗██╗   ██╗███████╗███╗   ██╗████████╗███████╗    ██╗      ██████╗  ██████╗ ██╗ ██████╗
-    # ██╔════╝██║   ██║██╔════╝████╗  ██║╚══██╔══╝██╔════╝    ██║     ██╔═══██╗██╔════╝ ██║██╔════╝
-    # █████╗  ██║   ██║█████╗  ██╔██╗ ██║   ██║   ███████╗    ██║     ██║   ██║██║  ███╗██║██║
-    # ██╔══╝  ╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ╚════██║    ██║     ██║   ██║██║   ██║██║██║
-    # ███████╗ ╚████╔╝ ███████╗██║ ╚████║   ██║   ███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
-    # ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
+    # ███████╗██╗   ██╗███████╗███╗   ██╗████████╗███████╗
+    # ██╔════╝██║   ██║██╔════╝████╗  ██║╚══██╔══╝██╔════╝
+    # █████╗  ██║   ██║█████╗  ██╔██╗ ██║   ██║   ███████╗
+    # ██╔══╝  ╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ╚════██║
+    # ███████╗ ╚████╔╝ ███████╗██║ ╚████║   ██║   ███████║
+    # ╚══════╝  ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -61,50 +61,40 @@ class FunCog(commands.Cog):
             return
 
         pattern = REGEX['quoi']['pattern']
+        response = STRINGS['fun']['quoi']
 
         if matches_pattern(pattern, message.content):
-            logging.info(f"-- {message.author} said: {message.content} and matched with 'quoi' pattern")
-            await send_response_to_discord(target=message, content=STRINGS['fun']['quoi'])
+            logging.info(
+                "-- %s said: %s and matched with 'quoi' pattern",
+                message.author,
+                message.content
+            )
+            await send_response_to_discord(ctx=message, content=response)
 
         await self.bot.process_commands(message)
 
-    #  ██████╗ ██████╗ ███╗   ███╗███╗   ███╗ █████╗ ███╗   ██╗██████╗ ███████╗    ██╗      ██████╗  ██████╗ ██╗ ██████╗
-    # ██╔════╝██╔═══██╗████╗ ████║████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝    ██║     ██╔═══██╗██╔════╝ ██║██╔════╝
-    # ██║     ██║   ██║██╔████╔██║██╔████╔██║███████║██╔██╗ ██║██║  ██║███████╗    ██║     ██║   ██║██║  ███╗██║██║
-    # ██║     ██║   ██║██║╚██╔╝██║██║╚██╔╝██║██╔══██║██║╚██╗██║██║  ██║╚════██║    ██║     ██║   ██║██║   ██║██║██║
-    # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║    ███████╗╚██████╔╝╚██████╔╝██║╚██████╗
-    #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
-
-    @app_commands.command(
-        name=COMMANDS['fun']['avatar']['slash_command'],
-        description=COMMANDS['fun']['avatar']['description'],
-    )
-    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-    async def avatar_logic(self, interaction: discord.Interaction, user:discord.User):
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         """
-        Responds to the /avatar slash command
+        Event listener that triggers whenever a reaction is added to a message
 
         Parameters:
-            interaction (discord.Interaction): The interaction object triggered by the user
-            user (discord.User): The user whose avatar you want to retrieve
+            payload (discord.RawReactionActionEvent): The message who trigger the listener
 
-        Action:
-            - Reply to the user with 'feur'
+        Actions:
+            - Checks if the reaction added matche with the quote emoji
+            - If found, quote the message
         """
-        logging.info(f"-- {interaction.user.name} use /avatar slash command for retrieving {user.name} avatar")
+        emoji = BOT['fun']['reaction_for_quote']
+        if payload.emoji.name == emoji:
+            await quote_user_with_reaction(ctx=self.bot, payload=payload)
 
-        avatar_embed = await create_discord_embed(
-            color=discord.Color(0x8A2387),
-            author=STRINGS['fun']['avatar_embed_author_field'].format(user=user.name),
-            icon=interaction.guild.icon.url,
-            image_url=user.display_avatar.url
-        )
-
-        await send_response_to_discord(
-            target=interaction,
-            content=STRINGS['fun']['avatar_retrieve'].format(user=user.mention),
-            embed=avatar_embed
-        )
+    #  ██████╗ ██████╗ ███╗   ███╗███╗   ███╗ █████╗ ███╗   ██╗██████╗ ███████╗
+    # ██╔════╝██╔═══██╗████╗ ████║████╗ ████║██╔══██╗████╗  ██║██╔══██╗██╔════╝
+    # ██║     ██║   ██║██╔████╔██║██╔████╔██║███████║██╔██╗ ██║██║  ██║███████╗
+    # ██║     ██║   ██║██║╚██╔╝██║██║╚██╔╝██║██╔══██║██║╚██╗██║██║  ██║╚════██║
+    # ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║██████╔╝███████║
+    #  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝
 
     @app_commands.command(
         name=COMMANDS['fun']['quoi']['slash_command'],
@@ -121,9 +111,36 @@ class FunCog(commands.Cog):
         Action:
             - Reply to the user with 'feur'
         """
-        logging.info(f"-- {interaction.user.name} use /quoi slash command")
+        response = STRINGS['fun']['quoi']
 
-        await send_response_to_discord(target=interaction, content=STRINGS['fun']['quoi'])
+        logging.info(
+            "-- %s use /quoi slash command",
+            interaction.user.name
+        )
+        await send_response_to_discord(ctx=interaction, content=response)
+
+    @app_commands.command(
+        name=COMMANDS['fun']['quote']['slash_command'],
+        description=COMMANDS['fun']['quote']['description'],
+    )
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+    async def quote_logic(self, interaction: discord.Interaction, screen: discord.Attachment):
+        """
+        Responds to the /quote slash command
+
+        Parameters:
+            interaction (discord.Interaction): The interaction object triggered by the user
+            screen (discord.Attachment): The screen for quote user
+
+        Action:
+            - Send the quote of the user with a screen
+        """
+
+        logging.info(
+            "-- %s use /quote slash command",
+            interaction.user.name
+        )
+        await quote_user_with_screen(ctx=interaction, screen=screen)
 
     @app_commands.command(
         name=COMMANDS['fun']['roll']['slash_command'],
@@ -141,22 +158,12 @@ class FunCog(commands.Cog):
         Action:
             - Sends a random number between 1 and the number of sides
         """
-        logging.info(f"-- {interaction.user.name} use /roll slash command for dice with {sides} sides")
-
-        random_number_1 = random.randint(1, sides)
-        random_number_2 = random_number_1
-
-        # As long as random_number_1 is equal to random_number_2, we rethrow it
-        while random_number_1 == random_number_2:
-            random_number_2 = random.randint(1, sides)
-
-        await send_response_to_discord(
-            target=interaction,
-            content=STRINGS['fun']['roll_result'].format(
-                first_result=random_number_1,
-                second_result=random_number_2
-            )
+        logging.info(
+            "-- %s use /roll slash command for dice with %s sides",
+            interaction.user.name,
+            sides
         )
+        await roll_dice(ctx=interaction, sides=sides)
 
     @app_commands.command(
         name=COMMANDS['fun']['say']['slash_command'],
@@ -174,24 +181,12 @@ class FunCog(commands.Cog):
         Action:
             - Repeat the message in chat in a detached message
         """
-        logging.info(f"-- {interaction.user.name} use /say slash command for repeat {message}")
-
-        random_swap = random.randint(0, 1)
-
-        logging.info(f"-- {interaction.user.name} use /quoi slash command")
-        await send_response_to_discord(target=interaction, content=message, detach=True)
-
-        if random_swap:
-            await send_response_to_discord(
-                target=interaction,
-                content=STRINGS['fun']['message_repeat_with_success_sus'].format(user=interaction.user.mention)
-            )
-        else:
-            await send_response_to_discord(
-                target=interaction,
-                content=STRINGS['fun']['message_repeat_with_success'],
-                ephemeral=True
-            )
+        logging.info(
+            "-- %s use /say slash command for repeat %s",
+            interaction.user.name,
+            message
+        )
+        await repeat_message(ctx=interaction, message=message)
 
 
 async def setup(bot):

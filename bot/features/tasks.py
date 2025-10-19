@@ -2,7 +2,7 @@
 bot/cogs/scheduler.py
 © by hassanpacary
 
-Cog containing globals scheduler and their logic
+Tasks scheduler and their logic
 """
 
 # --- Imports ---
@@ -10,11 +10,11 @@ import logging
 from datetime import datetime
 
 # --- Third party imports ---
-from discord.ext import commands, tasks
+from discord.ext import tasks
 
 # --- bot modules ---
-from bot.services.activity_service import random_activity, set_bot_activity
-from bot.services.quotes_service import reset_quote
+from bot.services.guild.activity_component import set_bot_activity
+from bot.services.fun.quote_component import reset_quote
 
 
 # ███████╗ ██████╗██╗  ██╗███████╗██████╗ ██╗   ██╗██╗     ███████╗██████╗
@@ -25,19 +25,16 @@ from bot.services.quotes_service import reset_quote
 # ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
 
 
-class SchedulerCog(commands.Cog):
-    """Event cog class"""
+class TasksScheduler:
+    """Tasks scheduler class"""
 
     def __init__(self, bot):
-        """Initialize the cog with a reference to the bot"""
+        """Initialize the tasks with a reference to the bot"""
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        """Event triggered when the bot is ready and connected to Discord"""
-
-        # Start all background task
-        self.swap_status_task.start()
+    def start(self):
+        """Start all background tasks"""
+        self.swap_activity_task.start()
         self.reset_quote_task.start()
 
     #  █████╗  ██████╗████████╗██╗██╗   ██╗██╗████████╗██╗   ██╗
@@ -48,18 +45,10 @@ class SchedulerCog(commands.Cog):
     # ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝  ╚═══╝  ╚═╝   ╚═╝      ╚═╝
 
     @tasks.loop(hours=1)
-    async def swap_status_task(self):
+    async def swap_activity_task(self):
         """Background task that updates the bot's presence every hour"""
-        activity_name, activity_type, activity_state = await random_activity()
-
-        await set_bot_activity(
-            bot=self.bot,
-            activity_name=activity_name,
-            activity_type=activity_type,
-            activity_state=activity_state
-        )
-
-        logging.info(f"-- Swapped activity name: {activity_name}, type: {activity_type}, state: {activity_state}")
+        await set_bot_activity(ctx=self.bot)
+        logging.info("-- Swapped activity")
 
     #  ██████╗ ██╗   ██╗ ██████╗ ████████╗███████╗
     # ██╔═══██╗██║   ██║██╔═══██╗╚══██╔══╝██╔════╝
@@ -74,9 +63,5 @@ class SchedulerCog(commands.Cog):
         now = datetime.now()
 
         if now.day == 1 and now.hour == 18:
-            await reset_quote(self.bot)
-
-
-async def setup(bot):
-    """Adds this cog to the given bot"""
-    await bot.add_cog(SchedulerCog(bot))
+            await reset_quote(ctx=self.bot)
+            logging.info("-- Monthly reset of the quote channel")
