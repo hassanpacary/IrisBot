@@ -11,7 +11,7 @@ from discord import ui
 
 # --- Bot modules ---
 from bot.core.config_loader import STRINGS
-from bot.utils.discord_utils import send_response_to_discord
+from bot.utils.discord_utils import send_response_to_discord, send_message_in_channel
 
 
 # ███╗   ███╗ ██████╗ ██████╗  █████╗ ██╗
@@ -42,14 +42,14 @@ class MessageModal(ui.Modal, title='Questionnaire Response'):
         Parameters:
             interaction (discord.Interaction): Interaction object
         """
-        await send_response_to_discord(
-            ctx=interaction,
-            content=STRINGS['guild']['modal_factory']['interaction_response'],
-            ephemeral=True
+        await send_message_in_channel(
+            ctx=interaction.user,
+            channel_id=interaction.channel.id,
+            content=self.message.component.value  # type: ignore
         )
 
         await send_response_to_discord(
             ctx=interaction,
-            content=self.message.component.value, # type: ignore
-            detach=True
+            content=STRINGS['guild']['modal_factory']['interaction_response'],
+            ephemeral=True
         )

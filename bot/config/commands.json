@@ -63,15 +63,5 @@
       "slash_command": "profile",
       "description": "Affiche ton profil ou celui d'un autre membre"
     }
-  },
-  "vocal": {
-    "join": {
-      "slash_command": "join",
-      "description": "Iris rejoint le salon vocal"
-    },
-    "disconnect": {
-      "slash_command": "disconnect",
-      "description": "Iris quitte le salon vocal"
-    }
   }
 }

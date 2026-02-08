@@ -4,14 +4,12 @@
   "intents": {
     "members": true,
     "messages": true,
-    "message_content": true,
-    "voice_states": false
+    "message_content": true
   },
   "channels": {
     "quotes": 896555313120047105,
     "goodbye": 594579103806390315,
     "log": 1417957745293918329,
-    "tts": 594583967554994178,
     "welcome": 594579103806390315
   },
   "color": {
@@ -29,8 +27,5 @@
   },
   "moderation": {
     "purge_amount_max": 100
-  },
-  "voice": {
-    "synthesis_voice": "fr-FR-VivienneMultilingualNeural"
   }
 }

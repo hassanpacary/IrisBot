@@ -101,13 +101,5 @@
       "embed_author_field": "Avatar de {user}",
       "retrieve": "Voilà {user}, il est beau hein !"
     }
-  },
-  "vocal": {
-    "already_connected": "Je suis déjà dans le voc",
-    "disconnected_with_success": "J'me déco",
-    "change_channel": "T'as l'air bien seul... J'arrive",
-    "connect_with_success": "Je viens d'me co",
-    "is_not_connected": "Tu veux que je me déconnecte d'où au juste ?",
-    "user_not_connected": "Mais tu es OÙ ?"
   }
 }

@@ -4,6 +4,8 @@ bot/services/level/level_service.py
 
 Utility functions for bot leveling tasks
 """
+
+# --- Imports ---
 import random
 
 # --- Third party imports ---
