@@ -9,8 +9,6 @@
 ## Introduction
 IrisBot is a bot developed for the WBZ Discord server, and is the mascot of our friends circle. Its code is open source, and you can use it for your own bot if you wish!
 
-[![Discord](https://discord.com/api/guilds/594579103806390313/embed.png)](https://discord.gg/Bfd2rnJkuA)
-
 ## How to use
 1. Download code lastest version ;
 2. Fill the `.env.template` (dotenv) file and rename it `.env` ;
@@ -19,4 +17,4 @@ IrisBot is a bot developed for the WBZ Discord server, and is the mascot of our 
 5. Execute `main.py`
 
 ## Dependancies
-Reddit and vocal cog depend on `ffmpeg`. Install it and configure it in your system environment variables.
+Reddit cog depend on `ffmpeg`. Install it and configure it in your system environment variables.
