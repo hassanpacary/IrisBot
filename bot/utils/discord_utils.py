@@ -12,6 +12,7 @@ import logging
 
 # --- Third party imports ---
 import discord
+from discord.utils import MISSING
 
 # --- Bot modules
 from bot.utils.strings_utils import get_string_segment
@@ -30,10 +31,10 @@ from bot.utils.strings_utils import get_string_segment
 async def send_response_to_discord( # pylint: disable=too-many-arguments
         *,
         ctx: discord.Interaction | discord.Message,
-        content: str = None,
-        files: list[discord.File] = None,
-        embed: discord.Embed = None,
-        view: discord.ui.View = None,
+        content: str = MISSING,
+        files: list[discord.File] = MISSING,
+        embed: discord.Embed = MISSING,
+        view: discord.ui.View = MISSING,
         ephemeral: bool = False,
         detach: bool = False
 ):

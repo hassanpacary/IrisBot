@@ -8,10 +8,6 @@
       "slash_command": "reload",
       "description": "Re-charge les cogs de Iris"
     },
-    "send": {
-      "slash_command": "send",
-      "description": "Envoie un message avec Iris"
-    },
     "unload": {
       "slash_command": "unload",
       "description": "Décharge les cogs de Iris"
@@ -37,9 +33,17 @@
     }
   },
   "level": {
+    "givexp": {
+      "slash_command": "givexp",
+      "description": "Give de l'expérience à un utilisateur"
+    },
     "leaderboard": {
       "slash_command": "leaderboard",
       "description": "Classements des membres du discord"
+    },
+    "resetlvl": {
+      "slash_command": "resetlvl",
+      "description": "Remets à zéro les levels d'un utilisateur"
     }
   },
   "moderation": {
@@ -58,6 +62,10 @@
     "avatar": {
       "slash_command": "avatar",
       "description": "Envoie l'avatar d'un utilisateur"
+    },
+    "mycolor": {
+      "slash_command": "mycolor",
+      "description": "choisis ta propre couleur"
     },
     "profile": {
       "slash_command": "profile",

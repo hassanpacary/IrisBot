@@ -25,7 +25,8 @@ WHERE user = ?;
 
 -- name: update_level
 UPDATE levels
-SET level = ?,
+SET xp = ?
+    level = ?,
     next_level = ?
 WHERE user = ?
 

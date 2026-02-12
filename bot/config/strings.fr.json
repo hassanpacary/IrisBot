@@ -9,12 +9,6 @@
       "reload": "Re-chargement des différents cogs, check dans la console si tout est ok",
       "unload": "déchargement des différents cogs, check dans la console si tout est ok"
     },
-    "modal_factory": {
-      "label_text": "Qu'est-ce que je dois envoyer ?",
-      "label_files": "Je dois envoyer des fichiers avec ton message ?",
-      "placeholder": "Kami est le meilleur modo discord",
-      "interaction_response": "message envoyé avec succès"
-    },
     "activity_component": {
       "preset_activity": {
         "game": [
@@ -69,7 +63,10 @@
     }
   },
   "level": {
+    "cheating": "Tu viens de give {amount} points d'xp à {user}",
     "level_up": "{user} vient de passer niveau {level} !",
+    "reset_user": "Les niveaux de {user} on étés remis à zéro !",
+    "not_reset_user": "L'utilisateur n'est pas dans la base de données.",
     "leaderboard": {
       "no_data": "Pas de données sur le niveau des utilisateurs !",
       "title": ":trophy: Leaderboard — Page {current_page}/{pages}"
@@ -97,6 +94,13 @@
   },
   "social": {
     "no_profile": "Qui es tu ?",
+    "mycolor": {
+      "mycolor_color_created": "Je t'ai bien assigné ta nouvelle couleur. Tu es tout beau",
+      "mycolor_create_reason": "Modification de la couleur avec Iris",
+      "mycolor_delete_reason": "suppression de l'ancienne couleur avec Iris",
+      "mycolor_hexa_not_matched": "Donne moi un code couleur correct",
+      "mycolor_lvl_not_reached": "Continue de discuter avec les autres avant que je fasse ça pour toi"
+    },
     "avatar_component": {
       "embed_author_field": "Avatar de {user}",
       "retrieve": "Voilà {user}, il est beau hein !"

@@ -95,7 +95,7 @@ class RedditCog(commands.Cog):
 
         Parameters:
             interaction (discord.Interaction): The interaction object triggered by the user
-            url (str): The url of the Reddit post
+            url (str): URL du poste Reddit
 
         Action:
             - Checks if Reddit URL matches with the regex pattern

@@ -15,7 +15,7 @@ from discord.ext import commands
 
 # --- Bot modules ---
 from bot.core.config_loader import COMMANDS
-from bot.services.social.social_service import retrieve_user_avatar, display_profile
+from bot.services.social.social_service import display_profile, choose_color, retrieve_user_avatar
 
 
 # ███████╗ ██████╗  ██████╗██╗ █████╗ ██╗
@@ -51,7 +51,7 @@ class SocialCog(commands.Cog):
 
         Parameters:
             interaction (discord.Interaction): The interaction object triggered by the user
-            user (discord.User): The user whose avatar you want to retrieve
+            user (discord.User): Utilisateur cible
 
         Action:
             - Reply to the user with avatar image
@@ -64,6 +64,36 @@ class SocialCog(commands.Cog):
         await retrieve_user_avatar(ctx=interaction, user=user)
 
     @app_commands.command(
+        name=COMMANDS['social']['mycolor']['slash_command'],
+        description=COMMANDS['social']['mycolor']['description'],
+    )
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+    async def mycolor_logic(self, interaction: discord.Interaction, name:str, color: str):
+        """
+        Responds to the /mycolor slash command
+
+        Parameters:
+            interaction (discord.Interaction): The interaction object triggered by the user.
+            name (str): Nom du rôle
+            color (str): Couleur du rôle
+
+        Action:
+            - Create a new role with a custom color for the user
+        """
+        logging.info(
+            "-- %s use /color slash command",
+            interaction.user.name
+        )
+
+        await choose_color(
+            ctx=interaction,
+            color_db=self.bot.color_db,
+            level_db=self.bot.level_db,
+            role_name=name,
+            hex_value=color
+        )
+
+    @app_commands.command(
         name=COMMANDS['social']['profile']['slash_command'],
         description=COMMANDS['social']['profile']['description'],
     )
@@ -74,7 +104,7 @@ class SocialCog(commands.Cog):
 
         Parameters:
             interaction (discord.Interaction): The interaction object triggered by the user
-            user (discord.User): The user whose avatar you want to retrieve
+            user (discord.User): Utilisateur cible (par défaut vous)
 
         Action:
             - Display user profil card

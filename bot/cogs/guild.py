@@ -19,7 +19,6 @@ from bot.features import context_menus
 from bot.features.tasks import TasksScheduler
 from bot.services.guild.cogs_factory import load_cogs, reload_cogs, unload_cogs
 from bot.services.guild.guild_service import welcome_new_member, goodbye_former_member
-from bot.services.guild.modal_factory import MessageModal
 from bot.utils.discord_utils import send_response_to_discord
 
 
@@ -50,6 +49,11 @@ class GuildCog(commands.Cog):
             "-- Bot connected as %s",
             self.bot.user.name
         )
+
+        # Connect to level db
+        await self.bot.color_db.connect()
+        self.bot.color_db.load_queries("color.sql")
+        await self.bot.color_db.execute("create_table_colors")
 
         # Connect to level db
         await self.bot.level_db.connect()
@@ -161,30 +165,6 @@ class GuildCog(commands.Cog):
         )
         await send_response_to_discord(ctx=interaction, content=response, ephemeral=True)
         await reload_cogs(ctx=self.bot)
-
-    @app_commands.command(
-        name=COMMANDS['guild']['send']['slash_command'],
-        description=COMMANDS['guild']['send']['description'],
-    )
-    @app_commands.allowed_contexts(guilds=True)
-    @app_commands.default_permissions(administrator=True)
-    async def send_logic(self, interaction: discord.Interaction):
-        """
-        Responds to the /send slash command
-
-        Parameters:
-            interaction (discord.Interaction): The interaction object triggered by the user
-
-        Action:
-            - Open modal
-            - Send message from the modal
-        """
-        logging.info(
-            "-- %s use /send slash command",
-            interaction.user.name
-        )
-
-        await interaction.response.send_modal(MessageModal())  # type: ignore
 
     @app_commands.command(
         name=COMMANDS['guild']['unload']['slash_command'],

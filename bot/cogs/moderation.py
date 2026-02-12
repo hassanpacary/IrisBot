@@ -97,6 +97,10 @@ class ModerationCog(commands.Cog):
         """
         Responds to the /purge slash command
 
+        Parameters:
+            interaction (discord.Interaction): The interaction object triggered by the user
+            amount (int, optional): Nombre de messages à supprimer (par défaut 1)
+
         Action:
             - purge a certains amount of messages in chat
         """

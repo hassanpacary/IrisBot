@@ -36,6 +36,7 @@ class Bot(commands.Bot):
             if hasattr(intents, intent_name):
                 setattr(intents, intent_name, enabled)
 
+        self.color_db = DatabaseManager("color.db")
         self.level_db = DatabaseManager("level.db")
 
         # Initialize bot

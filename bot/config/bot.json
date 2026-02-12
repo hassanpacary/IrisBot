@@ -22,10 +22,14 @@
     "reaction_for_quote": "📸"
   },
   "level": {
-    "level_up_calcul": "(next_level+1) * (1.25 ** (level-1))",
+    "level_up_calcul": "next_level + (level * 25)",
     "random_xp_max": 3
   },
   "moderation": {
     "purge_amount_max": 100
+  },
+  "social": {
+    "level_for_color": 5,
+    "color_role_id_position": 1471313232651358218
   }
 }

@@ -130,7 +130,7 @@ class FunCog(commands.Cog):
 
         Parameters:
             interaction (discord.Interaction): The interaction object triggered by the user
-            screen (discord.Attachment): The screen for quote user
+            screen (discord.Attachment): La capture d'écran contenant la quote de l'utilisateur cible
 
         Action:
             - Send the quote of the user with a screen
@@ -153,7 +153,7 @@ class FunCog(commands.Cog):
 
         Parameters:
             interaction (discord.Interaction): The interaction object triggered by the user
-            sides (int): The number of sides to roll. (Default 6)
+            sides (int): Le nombre de faces à roll (par défaut 6)
 
         Action:
             - Sends a random number between 1 and the number of sides
@@ -176,7 +176,7 @@ class FunCog(commands.Cog):
 
         Parameters:
             interaction (discord.Interaction): The interaction object triggered by the user
-            message (str): The message to repeat
+            message (str): Message a répéter
 
         Action:
             - Repeat the message in chat in a detached message
