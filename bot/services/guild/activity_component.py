@@ -1,5 +1,5 @@
 """
-bot/services/bot/activity_component.py
+bot/services/guild/activity_component.py
 © by hassanpacary
 
 Utility functions to manage Discord bot activities (presence)

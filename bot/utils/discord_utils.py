@@ -12,6 +12,7 @@ import logging
 
 # --- Third party imports ---
 import discord
+from discord.ext import commands
 from discord.utils import MISSING
 
 # --- Bot modules
@@ -85,7 +86,7 @@ async def send_response_to_discord( # pylint: disable=too-many-arguments
 
 
 async def send_message_in_channel(
-        ctx: discord.Member | discord.Message,
+        ctx: commands.Bot | discord.Member | discord.Message,
         channel_id: int = None,
         content: str = None,
         embed: discord.Embed = None,
@@ -106,7 +107,11 @@ async def send_message_in_channel(
     else:
         system_channel_id = ctx.guild.system_channel.id
 
-    channel = await ctx.guild.fetch_channel(system_channel_id)
+    if isinstance(ctx, commands.Bot):
+        channel = await ctx.fetch_channel(system_channel_id)
+    else:
+        channel = await ctx.guild.fetch_channel(system_channel_id)
+
     await channel.send(content=content, embed=embed)
 
 

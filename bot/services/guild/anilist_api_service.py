@@ -11,7 +11,7 @@ import os
 
 # --- Bot modules ---
 from bot.utils.aiohttp_client import aiohttp_client
-from bot.utils.files_utils import load_file, load_yaml
+from bot.utils.files_utils import load_file
 
 
 # pylint: disable=line-too-long
@@ -24,22 +24,18 @@ from bot.utils.files_utils import load_file, load_yaml
 # pylint: enable=line-too-long
 
 
-async def load_api_endpoint() -> tuple[str, dict]:
+async def _get_api_endpoint() -> tuple[str, dict]:
     """
-    Loads the AniList GraphQL endpoint URL and headers from graphql.config.yml
+    Loads the AniList GraphQL endpoint URL and headers from env file
 
     Returns:
         tuple: (url: str, headers: dict)
     """
-    graphql_config_path = os.path.join('bot', 'queries', 'graphql.config.yml')
-
-    api_config = load_yaml(graphql_config_path)
-    endpoint = api_config['extensions']['endpoints']['anilist']
-
-    return endpoint['url'], endpoint.get('headers', {})
+    al_api_url = os.environ["ANILIST_API_URL"]
+    return al_api_url, {"Content-Type": "application/json"}
 
 
-async def load_graphql_query(query: str) -> str:
+async def _load_graphql_query(query: str) -> str:
     """
     Load a GraphQL query file from the `queries` directory
 
@@ -60,15 +56,15 @@ async def load_graphql_query(query: str) -> str:
 # ╚═╝  ╚═╝╚══════╝ ╚══▀▀═╝  ╚═════╝ ╚══════╝╚══════╝   ╚═╝   ╚══════╝
 
 
-async def get_anilist_total_anime() -> int:
+async def _get_al_animes() -> int:
     """
     Fetch the total number of anime entries on AniList
 
     Returns:
         int: Total number of anime entries in AniList
     """
-    api_url, headers = await load_api_endpoint()
-    query = await load_graphql_query('get_anilist_total_anime.graphql')
+    api_url, headers = await _get_api_endpoint()
+    query = await _load_graphql_query('get_anilist_total_anime.graphql')
 
     # --- http request to anilist api ---
     async with aiohttp_client.session.post(api_url, json={'query': query}, headers=headers) as resp:
@@ -85,11 +81,11 @@ async def fetch_random_anime() -> dict:
     Returns:
         dict: Random anime entry
     """
-    api_url, headers = await load_api_endpoint()
-    query = await load_graphql_query('get_anilist_random_page.graphql')
+    api_url, headers = await _get_api_endpoint()
+    query = await _load_graphql_query('get_anilist_random_page.graphql')
 
     # --- Get anilist total animes ---
-    total = await get_anilist_total_anime()
+    total = await _get_al_animes()
 
     # Get random page, because anilist's api works by pagination, not index
     per_page = 25

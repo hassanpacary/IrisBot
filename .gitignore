@@ -217,4 +217,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-/bot/database/level.db
+/bot/data/level.db
+/bot/data/color.db

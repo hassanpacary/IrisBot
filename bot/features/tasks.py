@@ -14,6 +14,7 @@ from discord.ext import tasks
 
 # --- bot modules ---
 from bot.services.guild.activity_component import set_bot_activity
+from bot.services.guild.deals_component import check_deals
 from bot.services.fun.quote_component import reset_quote
 
 
@@ -36,6 +37,7 @@ class TasksScheduler:
         """Start all background tasks"""
         self.swap_activity_task.start()
         self.reset_quote_task.start()
+        self.check_deals_task.start()
 
     #  █████╗  ██████╗████████╗██╗██╗   ██╗██╗████████╗██╗   ██╗
     # ██╔══██╗██╔════╝╚══██╔══╝██║██║   ██║██║╚══██╔══╝╚██╗ ██╔╝
@@ -65,3 +67,16 @@ class TasksScheduler:
         if now.day == 1 and now.hour == 18:
             await reset_quote(ctx=self.bot)
             logging.info("-- Monthly reset of the quote channel")
+
+    # ██████╗ ███████╗ █████╗ ██╗     ███████╗
+    # ██╔══██╗██╔════╝██╔══██╗██║     ██╔════╝
+    # ██║  ██║█████╗  ███████║██║     ███████╗
+    # ██║  ██║██╔══╝  ██╔══██║██║     ╚════██║
+    # ██████╔╝███████╗██║  ██║███████╗███████║
+    # ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝
+
+    @tasks.loop(hours=1)
+    async def check_deals_task(self):
+        """Background task that check videos games store for discount price"""
+        await check_deals(ctx=self.bot)
+        logging.info("-- videos games deals checked")

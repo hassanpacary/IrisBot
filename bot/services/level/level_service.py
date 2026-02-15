@@ -34,13 +34,13 @@ async def _check_level_up(
         level: int,
         next_level: int,
         target_user: discord.User = MISSING,
-):
+) -> bool:
     """
     Check and update the current level and amound of XP of the user
 
     Parameters:
         ctx (discord.Message): the discord message
-        db (DatabaseManager): the database manager
+        db (DatabaseManager): the data manager
         xp (int): the current level
         level (int): the current level
         next_level (int): the next level

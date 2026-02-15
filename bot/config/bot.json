@@ -7,16 +7,32 @@
     "message_content": true
   },
   "channels": {
+    "deals": 677607123110330400,
     "quotes": 896555313120047105,
     "goodbye": 594579103806390315,
     "log": 1417957745293918329,
     "welcome": 594579103806390315
   },
   "color": {
+    "deals": "FFD700",
     "fun": "FDC830",
     "moderation": "E94057",
     "reddit": "FF4500",
     "social": "8A2387"
+  },
+  "deals": {
+    "accepted_types": ["game"],
+    "16": "https://cdn.brandfetch.io/idjxHPThVp/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1667655482104",
+    "35": "https://cdn.brandfetch.io/id4AgSfSM1/w/400/h/400/theme/dark/icon.png?c=1bxid64Mup7aczewSAYMX&t=1767147303131",
+    "37": "https://cdn.brandfetch.io/idjNTqJgHM/w/1500/h/1500/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1768894438484",
+    "61": "https://cdn.brandfetch.io/idMpZmhn_O/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1767337337884",
+    "params": {
+      "country": "FR",
+      "limit": 50,
+      "mature": "false",
+      "shops": "16,35,37,61",
+      "filter": "N4IgDgNghgLgZgewE4FsQC4DaBGAugGhBgE8wBTDHfAZgKNLIDkEZKAmfAdnwA46UyMKAFUAzmSQZQKAJYA7DAFYADIRRQAHhmzLlAXz1A%3D%3D"
+    }
   },
   "fun": {
     "reaction_for_quote": "📸"
@@ -29,7 +45,7 @@
     "purge_amount_max": 100
   },
   "social": {
-    "level_for_color": 5,
+    "level_for_color": 3,
     "color_role_id_position": 1471313232651358218
   }
 }

@@ -30,8 +30,8 @@ class DatabaseManager:
 
     def __init__(self, db_path: str):
         """Initialize the db"""
-        self.db_path = os.path.join("bot", "database", db_path)
-        self.queries_path = os.path.join("bot", "database", "queries")
+        self.db_path = os.path.join("bot", "data", db_path)
+        self.queries_path = os.path.join("bot", "data", "queries")
         self.queries: dict[str, str] = {}
         self.conn: aiosqlite.Connection | None = None
 
@@ -43,7 +43,7 @@ class DatabaseManager:
     #  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝
 
     async def connect(self):
-        """Connect to the database"""
+        """Connect to the data"""
         self.conn = await aiosqlite.connect(self.db_path)
         await self.conn.execute("PRAGMA foreign_keys = ON;")
         await self.conn.commit()

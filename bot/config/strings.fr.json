@@ -9,6 +9,17 @@
       "reload": "Re-chargement des différents cogs, check dans la console si tout est ok",
       "unload": "déchargement des différents cogs, check dans la console si tout est ok"
     },
+    "deals_component": {
+      "embed_author_field": "Nouvelle promotion sur {store} !",
+      "embed_description_field": "Promotion de **{pourcent}%** jusqu'au {date}",
+      "embed_description_field_date_data": "(J'ai pas l'info)",
+      "embed_new_price_field_label": "Nouveau prix",
+      "embed_new_price_field": "{new_price}€",
+      "embed_old_price_field_label": "Ancien prix",
+      "embed_old_price_field": "~~{old_price}€~~",
+      "embed_history_low_field_label": "**Prix historique**",
+      "embed_history_low_field": "{history_price}€"
+    },
     "activity_component": {
       "preset_activity": {
         "game": [

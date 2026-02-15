@@ -77,6 +77,29 @@ def write_file(file_path: str, data: bytes) -> bool:
         return False
 
 
+def write_json(file_path: str, data: dict|list) -> bool:
+    """
+    Safely write data to a JSON file.
+
+    Parameters:
+        file_path (str): Path to the JSON file where data should be written.
+        data (Any): The data to serialize and write (dict, list, etc.).
+
+    Returns:
+        bool: True if the file was written successfully, False otherwise.
+    """
+
+    # --- Try writing the json file ---
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+        return True
+
+    except OSError as e:
+        logging.error("Error writing JSON to %s.\n%s", file_path, e)
+        return False
+
+
 #      ██╗███████╗ ██████╗ ███╗   ██╗    ███████╗██╗██╗     ███████╗
 #      ██║██╔════╝██╔═══██╗████╗  ██║    ██╔════╝██║██║     ██╔════╝
 #      ██║███████╗██║   ██║██╔██╗ ██║    █████╗  ██║██║     █████╗
