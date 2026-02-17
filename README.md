@@ -7,7 +7,7 @@
 ![GitHub License](https://img.shields.io/github/license/hassanpacary/IrisBot)
 
 ## Introduction
-IrisBot is a bot developed for the WBZ Discord server, and is the mascot of our friends circle. Its code is open source, and you can use it for your own bot if you wish!
+IrisBot is a bot developed for the WBZ Discord server, and is the mascot of our friends circle. Code is open source, and you can use it for your own bot if you wish!
 
 ## How to use
 1. Download code lastest version ;
@@ -16,5 +16,5 @@ IrisBot is a bot developed for the WBZ Discord server, and is the mascot of our 
 4. Run `pip install -r requirements.txt` in your console, from the root of the project ;
 5. Execute `main.py`
 
-## Dependancies
+## Dependencies
 Reddit cog depend on `ffmpeg`. Install it and configure it in your system environment variables.

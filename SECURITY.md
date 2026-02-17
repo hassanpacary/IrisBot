@@ -8,4 +8,4 @@
 
 ## Reporting a Vulnerability
 
-Please use the WBZ [discord server](https://discord.gg/Bfd2rnJkuA) !
+Please use GitHub !
