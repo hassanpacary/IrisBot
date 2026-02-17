@@ -16,6 +16,7 @@ from discord.ext import commands
 # --- Bot modules ---
 from bot.core.config_loader import BOT, STRINGS
 from bot.services.guild.itad_api_service import fetch_deals_data
+from bot.utils.aiohttp_client import aiohttp_client
 from bot.utils.discord_utils import send_message_in_channel, create_discord_embed
 from bot.utils.files_utils import load_json, write_json
 
@@ -30,6 +31,10 @@ from bot.utils.files_utils import load_json, write_json
 # pylint: enable=line-too-long
 
 
+async def _get_deal_url(itad_url: str) -> str:
+    async with aiohttp_client.session.get(url=itad_url, allow_redirects=True) as resp:
+        return resp.url
+
 async def _notif_deal(ctx: commands.Bot, deal: dict):
     """
     Send a notification in a Discord channel with deal information
@@ -39,6 +44,7 @@ async def _notif_deal(ctx: commands.Bot, deal: dict):
         deal (dict): deal information
     """
     color = BOT['color']['deals']
+    shop_url = await _get_deal_url(itad_url=deal['deal']['url'])
     deals_chan_id = BOT['channels']['deals']
 
     date = deal['deal']['limit_date']
@@ -55,7 +61,7 @@ async def _notif_deal(ctx: commands.Bot, deal: dict):
     deal_embed = await create_discord_embed(
         color=discord.Color(int(color, 16)),
         title=deal['title'],
-        title_url=deal['deal']['url'],
+        title_url=shop_url,
         description=STRINGS['guild']['deals_component']['embed_description_field'].format(
             pourcent=deal['deal']['pourcent'],
             date=date_format

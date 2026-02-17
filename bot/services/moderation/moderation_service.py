@@ -31,18 +31,19 @@ async def log_deleted_message(ctx: commands.Bot, message: discord.Message):
     guild = STRINGS['system']['guild']
     responses_dict = STRINGS['moderation']['log_component']
 
-    embed = await create_discord_embed(
-        color=discord.Color(int(color, 16)),
-        title=message.author.name,
-        description=message.content,
-        date=message.created_at,
-        author=responses_dict['embed_delete_message'],
-        icon=ctx.user.avatar.url,
-        thumbnail_url=message.author.display_avatar.url,
-        footer_text=guild
-    )
+    if message.author != ctx.user :
+        embed = await create_discord_embed(
+            color=discord.Color(int(color, 16)),
+            title=message.author.name,
+            description=message.content,
+            date=message.created_at,
+            author=responses_dict['embed_delete_message'],
+            icon=ctx.user.avatar.url,
+            thumbnail_url=message.author.display_avatar.url,
+            footer_text=guild
+        )
 
-    await send_message_in_channel(ctx=message, channel_id=channel_id, embed=embed)
+        await send_message_in_channel(ctx=message, channel_id=channel_id, embed=embed)
 
 
 async def log_edited_message(
@@ -56,21 +57,22 @@ async def log_edited_message(
     guild = STRINGS['system']['guild']
     responses_dict = STRINGS['moderation']['log_component']
 
-    embed = await create_discord_embed(
-        color=discord.Color(int(color, 16)),
-        title=message_before.author.name,
-        description=message_before.content,
-        date=message_before.created_at,
-        author=responses_dict['embed_edited_message'],
-        icon=ctx.user.avatar.url,
-        fields=[
-            (responses_dict['embed_new_message_field'], message_after.content)
-        ],
-        thumbnail_url=message_before.author.display_avatar.url,
-        footer_text=guild
-    )
+    if message_after.author != ctx.user:
+        embed = await create_discord_embed(
+            color=discord.Color(int(color, 16)),
+            title=message_before.author.name,
+            description=message_before.content,
+            date=message_before.created_at,
+            author=responses_dict['embed_edited_message'],
+            icon=ctx.user.avatar.url,
+            fields=[
+                (responses_dict['embed_new_message_field'], message_after.content)
+            ],
+            thumbnail_url=message_before.author.display_avatar.url,
+            footer_text=guild
+        )
 
-    await send_message_in_channel(ctx=message_before, channel_id=channel_id, embed=embed)
+        await send_message_in_channel(ctx=message_before, channel_id=channel_id, embed=embed)
 
 
 # ██████╗ ██╗   ██╗██████╗  ██████╗ ███████╗

@@ -22,16 +22,16 @@
   },
   "deals": {
     "accepted_types": ["game"],
-    "16": "https://cdn.brandfetch.io/idjxHPThVp/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1667655482104",
+    "16": "https://cdn.brandfetch.io/idjxHPThVp/w/320/h/320/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1767107816181",
     "35": "https://cdn.brandfetch.io/id4AgSfSM1/w/400/h/400/theme/dark/icon.png?c=1bxid64Mup7aczewSAYMX&t=1767147303131",
     "37": "https://cdn.brandfetch.io/idjNTqJgHM/w/1500/h/1500/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1768894438484",
-    "61": "https://cdn.brandfetch.io/idMpZmhn_O/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1767337337884",
+    "61": "https://cdn.brandfetch.io/idMpZmhn_O/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1726566655121",
     "params": {
       "country": "FR",
-      "limit": 50,
+      "limit": 100,
       "mature": "false",
-      "shops": "16,35,37,61",
-      "filter": "N4IgDgNghgLgZgewE4FsQC4DaBGAugGhBgE8wBTDHfAZgKNLIDkEZKAmfAdnwA46UyMKAFUAzmSQZQKAJYA7DAFYADIRRQAHhmzLlAXz1A%3D%3D"
+      "sort": "-time",
+      "filter": "N4IgLgngDgpiBcBtAjAGgMwF1UgLYzAEMBVAZxgCcFRcBLAOwQDYBWHXQgDwWQAZeAvjlIALAPZRSCROjboA7KiZpkTTAKA%3D"
     }
   },
   "fun": {

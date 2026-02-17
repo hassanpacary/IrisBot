@@ -75,8 +75,8 @@ class TasksScheduler:
     # ██████╔╝███████╗██║  ██║███████╗███████║
     # ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝
 
-    @tasks.loop(hours=1)
-    async def check_deals_task(self):
-        """Background task that check videos games store for discount price"""
-        await check_deals(ctx=self.bot)
-        logging.info("-- videos games deals checked")
+    #@tasks.loop(hours=1)
+    #async def check_deals_task(self):
+    #    """Background task that check videos games store for discount price"""
+    #    await check_deals(ctx=self.bot)
+    #    logging.info("-- videos games deals checked")
