@@ -151,30 +151,41 @@ async def _create_user_card(user: discord.User, user_data: dict) -> io.BytesIO:
         user_data (dict): the user data (contains: xp, level and next_level)
     """
     color = "#" + BOT['color']['social']
+
+    harmony_font = Font(path="bot/assets/fonts/harmonyos_sans_black.ttf", size=20)
+    harmony_font_italic = Font(path="bot/assets/fonts/harmonyos_sans_black_italic.ttf", size=90)
+
+    # User data
+    card_template = Editor("bot/assets/card_template.png").image
+    user_avatar_img = await load_image_async(str(user.avatar.url))
+    user_name = user.display_name.upper()
+    user_xp = user_data['xp']
+    user_level = user_data['level']
+    user_next_level = user_data['next_level']
+
+    # Card editor
     card = Editor(Canvas((900, 300), color=color))
+    card.paste(card_template, (0, 0))
 
-    profile_picture = await load_image_async(str(user.avatar.url))
-    profile = Editor(profile_picture).resize((150, 150)).circle_image()
+    user_avatar = Editor(user_avatar_img).resize((360, 360)).rounded_corners(50, 50)
+    card.paste(user_avatar, (550, -30))
 
-    poppins = Font.poppins(size=40)
-    poppins_small = Font.poppins(size=30)
-
-    card_right_shape = [(600, 0), (750, 300), (900, 300), (900, 0)]
-
-    card.polygon(card_right_shape, "#FFFFFF")
-    card.paste(profile, (30, 30))
-
-    card.rectangle((30, 220), width=650, height=40, color="#FFFFFF", radius=20)
-    card.bar((30, 215), max_width=650, height=50, percentage=user_data['xp'], color="#282828", radius=20)
-    card.text((200, 40), user.display_name, font=poppins, color="#FFFFFF")
-
-    card.rectangle((200, 100), width=350, height=2, fill="#FFFFFF")
+    card.text((40, 70), user_name, font=harmony_font_italic, color="#FCCD71")
+    card.text((40, 40), user_name, font=harmony_font_italic, color="#FFFFFF")
     card.text(
-        (200, 100),
-        f"Level - {user_data['level']} | XP - {user_data['xp']}/{user_data['next_level']}",
-        font=poppins_small,
+        (40, 245),
+        f"L     E     V     E     L        {user_level}",
+        font=harmony_font,
         color="#FFFFFF"
     )
+    card.text(
+        (480, 245),
+        f"{user_xp} / {user_next_level}",
+        font=harmony_font,
+        color="#FFFFFF"
+    )
+
+    card.bar((35, 210), max_width=550, height=25, percentage=user_xp, color=color, radius=20)
 
     return card.image_bytes
 
