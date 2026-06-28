@@ -1,56 +1,54 @@
-"""
-bot/core/environment.py
+"""Loads and exposes environment variables from the .env file.
+
+Called at bot startup and exits immediately with a logged error if the
+.env file is missing.
+
 © by hassanpacary
-
-configuration and load the environment variables
 """
 
-# --- Imports ---
+# --- Standard library ---
 import logging
 import os
 import sys
-from dotenv import load_dotenv, find_dotenv
+
+# --- Third-party ---
+from dotenv import find_dotenv, load_dotenv
 
 
-# ███████╗███╗   ██╗██╗   ██╗██╗██████╗  ██████╗ ███╗   ██╗███╗   ███╗███████╗███╗   ██╗████████╗
-# ██╔════╝████╗  ██║██║   ██║██║██╔══██╗██╔═══██╗████╗  ██║████╗ ████║██╔════╝████╗  ██║╚══██╔══╝
-# █████╗  ██╔██╗ ██║██║   ██║██║██████╔╝██║   ██║██╔██╗ ██║██╔████╔██║█████╗  ██╔██╗ ██║   ██║
-# ██╔══╝  ██║╚██╗██║╚██╗ ██╔╝██║██╔══██╗██║   ██║██║╚██╗██║██║╚██╔╝██║██╔══╝  ██║╚██╗██║   ██║
-# ███████╗██║ ╚████║ ╚████╔╝ ██║██║  ██║╚██████╔╝██║ ╚████║██║ ╚═╝ ██║███████╗██║ ╚████║   ██║
-# ╚══════╝╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝
+def load_env() -> None:
+    """Locates and loads the .env file.
 
-
-def load_env():
-    """Load environment variables from the .env file"""
+    Raises:
+        ValueError: If .env file not found,
+        so that the bot never starts in a misconfigured state.
+    """
     dotenv_path = find_dotenv()
 
-    # --- dotenv file not found ---
     if not dotenv_path:
-        logging.error("No .env file found")
-        sys.exit(1)
+        raise ValueError("No .env file found, bot cannot start.")
 
     load_dotenv(dotenv_path)
-    logging.info("-- Environment variables loaded")
+    logging.info("Environment variables loaded from %s", dotenv_path)
 
 
 def get_env_var(var: str) -> str:
-    """
-    Retrieve an environment variable safely
+    """Retrieves a required environment variable by name.
 
-    Parameters:
-        var (str): The name of the environment variable to retrieve
+    Exits the process with code 1 if the "DISCORD_TOKEN" variable is absent or empty.
+
+    Args:
+        var: The name of the environment variable to retrieve.
 
     Returns:
-        str: The value of the environment variable
+        The value of the environment variable as a string, or a null string.
     """
-    env_variable = os.getenv(var)
+    value = os.getenv(var)
 
-    # --- Environment variable not found ---
-    if not env_variable:
+    if not value:
         logging.error(
-            "Required environment variable '%s' not found.",
-            var
+            "Required environment variable '%s' is not set.",
+            var,
         )
-        sys.exit(1)
+        return "" if var != "DISCORD_TOKEN" else sys.exit(1)
 
-    return env_variable
+    return value

@@ -1,92 +1,127 @@
-"""
-bot/services/reddit/response_service.py
+"""Reddit service for reddit cog.
+
+Manage logics functions for reddit url pattern command and listener.
+Sends improved Reddit post embed followed by the post medias
+
 © by hassanpacary
-
-Utility functions for send reddit submission data to user
 """
 
-# --- Third party imports ---
+# --- Standard library ---
+import logging
+import re
+
+# --- Third-party ---
 import discord
 
-# --- Bot modules ---
-from bot.core.config_loader import STRINGS, REGEX, BOT
-from bot.services.reddit.medias_dispatcher import dispatch_medias_response
-from bot.services.reddit.reddit_api_service import fetch_reddit_data
-from bot.utils.discord_utils import send_response_to_discord, create_discord_embed
-from bot.utils.strings_utils import matches_pattern
+# --- Internal ---
+from bot.api.reddit import reddit_api_requests
+from bot.cogs.reddit import reddit_strings
+from bot.config import colors_config, regex_config
+from bot.services.reddit import medias_dispatcher_service
+from bot.utils import discord_utils
 
 
-# pylint: disable=line-too-long
-# ███████╗███████╗███╗   ██╗██████╗     ███████╗██╗   ██╗██████╗ ███╗   ███╗██╗███████╗███████╗██╗ ██████╗ ███╗   ██╗    ██████╗  █████╗ ████████╗ █████╗
-# ██╔════╝██╔════╝████╗  ██║██╔══██╗    ██╔════╝██║   ██║██╔══██╗████╗ ████║██║██╔════╝██╔════╝██║██╔═══██╗████╗  ██║    ██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗
-# ███████╗█████╗  ██╔██╗ ██║██║  ██║    ███████╗██║   ██║██████╔╝██╔████╔██║██║███████╗███████╗██║██║   ██║██╔██╗ ██║    ██║  ██║███████║   ██║   ███████║
-# ╚════██║██╔══╝  ██║╚██╗██║██║  ██║    ╚════██║██║   ██║██╔══██╗██║╚██╔╝██║██║╚════██║╚════██║██║██║   ██║██║╚██╗██║    ██║  ██║██╔══██║   ██║   ██╔══██║
-# ███████║███████╗██║ ╚████║██████╔╝    ███████║╚██████╔╝██████╔╝██║ ╚═╝ ██║██║███████║███████║██║╚██████╔╝██║ ╚████║    ██████╔╝██║  ██║   ██║   ██║  ██║
-# ╚══════╝╚══════╝╚═╝  ╚═══╝╚═════╝     ╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝╚══════╝╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝
-# pylint: enable=line-too-long
+async def _build_reddit_embed(submission_data: dict) -> discord.Embed:
+    """Builds a Discord embed from Reddit submission metadata.
 
+    Args:
+        submission_data: A dict of post metadata as returned by fetch_reddit_data.
 
-async def send_response_with_post_data(ctx: discord.Interaction | discord.Message, url: str):
-    """Logic of /waf command and on_message event when reddit url trigger it"""
-    color = BOT['color']['reddit']
-    responses_dict = STRINGS['reddit']
-    pattern = REGEX['reddit']['pattern']
-
-    if not matches_pattern(pattern, url):
-        await send_response_to_discord(ctx=ctx, content=responses_dict['wrong_url'], ephemeral=True)
-        return
-
-    defer_msg = None
-
-    # Send defer message
-    if isinstance(ctx, discord.Interaction):
-        await ctx.response.defer() # type: ignore
-    elif isinstance(ctx, discord.Message):
-        defer_msg = await ctx.channel.send(STRINGS['system']['progress'])
-
-    submission_data = await fetch_reddit_data(url=url)
-    medias = submission_data['medias']
-
-    # Prepare message content
-    message_content = (
-        responses_dict['reply_message_with_medias_count'].format(
-            medias_count=len(medias)
-        )
-    )
-    message_embed = await create_discord_embed(
-        color=discord.Color(int(color, 16)),
+    Returns:
+        A fully constructed discord.Embed instance.
+    """
+    return await discord_utils.create_discord_embed(
+        color=discord.Color(int(colors_config.Utils.REDDIT, 16)),
         title=submission_data['post_title'],
         title_url=submission_data['post_url'],
         description=submission_data['post_content'],
         date=submission_data['creation_date'],
-        author="r/" + submission_data['subreddit_name'],
+        author=f"r/{submission_data['subreddit_name']}",
         icon=submission_data['subreddit_icon'],
         fields=[
-            (responses_dict['embed_fields']['author'], submission_data['author_name']),
-            (responses_dict['embed_fields']['upvote'], submission_data['upvote_number']),
-            (responses_dict['embed_fields']['responses'], submission_data['responses_number']),
+            (reddit_strings.RedditEmbedFields.AUTHOR, submission_data['author_name']),
+            (reddit_strings.RedditEmbedFields.UPVOTE, submission_data['upvote_number']),
+            (
+                reddit_strings.RedditEmbedFields.RESPONSES,
+                submission_data['responses_number'],
+            ),
         ],
         thumbnail_url=submission_data['subreddit_icon'],
-        footer_text="Reddit"
+        footer_text=reddit_strings.RedditEmbedFields.FOOTER,
     )
 
-    # --- Submission contains medias ---
-    if len(medias) > 0:
-        # Send responses with medias
-        await dispatch_medias_response(
-            ctx=ctx,
-            medias=medias,
-            message_content=message_content,
-            message_embed=message_embed,
-        )
 
-    # --- Submission contains not medias ---
+async def _send_improved_embed(
+        ctx: discord.Interaction | discord.Message,
+        url: str,
+) -> None:
+    """Sends the embed and dispatches any media
+    (video, images, YouTube) as follow-ups.
+
+    Args:
+        ctx: The Discord interaction or message context.
+        url: The Reddit post URL to embed.
+    """
+    if not isinstance(ctx.channel, discord.TextChannel):
+        return
+
+    channel = await discord_utils.get_channel_by_ctx(ctx=ctx, channel_id=ctx.channel.id)
+
+    async with channel.typing():
+        if isinstance(ctx, discord.Interaction):
+            await ctx.response.defer()
+
+        submission_data = await reddit_api_requests.fetch_post(url=url)
+        medias = submission_data['medias']
+        embed = await _build_reddit_embed(submission_data=submission_data)
+
+        if isinstance(ctx, discord.Interaction):
+            await ctx.followup.send(
+                content=reddit_strings.RESPONSE,
+                embed=embed,
+            )
+        else:
+            await ctx.edit(suppress=True)
+            await channel.send(content=reddit_strings.RESPONSE, embed=embed)
+
+        if medias:
+            await medias_dispatcher_service.dispatch_medias_upload_strategy(
+                ctx=ctx,
+                medias=medias,
+                channel=channel,
+            )
+
+
+async def handle_reddit_url_message(message: discord.Message, url: str) -> None:
+    """Replies with improved Reddit post embed and the medias of the post.
+
+    Args:
+        message: The incoming Discord message to evaluate.
+        url: The Reddit post URL to embed.
+    """
+    await _send_improved_embed(ctx=message, url=url)
+    logging.info(
+        "%s said: '%s' and matched with reddit post url pattern.",
+        message.author,
+        message.content,
+    )
+
+
+async def handle_reddit_url(interaction: discord.Interaction, url: str) -> None:
+    """Replies with improved Reddit post embed and the medias of the Reddit post.
+
+    in the case URL don't match, responds to the user with ephemeral message.
+
+    Args:
+        interaction: The Discord interaction context.
+        url: The Reddit post URL to embed.
+    """
+    matched_object = re.search(
+        pattern=regex_config.REDDIT_URL,
+        string=url
+    )
+
+    if matched_object:
+        await _send_improved_embed(ctx=interaction, url=url)
     else:
-        await send_response_to_discord(
-            ctx=ctx,
-            content=message_content,
-            embed=message_embed
-        )
-
-    if defer_msg:
-        await defer_msg.delete()
+        await interaction.response.send_message(content=reddit_strings.WRONG_URL)

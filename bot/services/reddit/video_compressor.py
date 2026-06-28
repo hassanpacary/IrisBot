@@ -1,243 +1,411 @@
-"""
-bot/services/reddit/video_compressor.py
+"""Video compressor service for reddit cog.
+
+Manage logics functions for download video, mux, and compression.
+Downloads video and audio streams separately, merges them with FFmpeg,
+then compresses the result if it exceeds the Discord filesize limit for the guild.
+
 © by hassanpacary
-
-Utility functions for video downloader, mux and compression.
 """
 
-# --- Imports ---
+# --- Standard library ---
 import asyncio
+import io
+import logging
 import os
-import subprocess
 import tempfile
 from pathlib import Path
 
-# --- Third party imports ---
+# --- Third-party ---
+import aiohttp
 import discord
 
-# --- Bot modules ---
-from bot.utils.aiohttp_client import aiohttp_client
-from bot.utils.discord_utils import create_discord_file
-from bot.utils.files_utils import load_file, write_file
+# --- Internal ---
+from bot.utils import files_utils, strings_utils
 
 
-# pylint: disable=line-too-long
-# ██████╗  ██████╗ ██╗    ██╗███╗   ██╗██╗      ██████╗  █████╗ ██████╗     ██╗   ██╗██╗██████╗ ███████╗ ██████╗
-# ██╔══██╗██╔═══██╗██║    ██║████╗  ██║██║     ██╔═══██╗██╔══██╗██╔══██╗    ██║   ██║██║██╔══██╗██╔════╝██╔═══██╗
-# ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║██║     ██║   ██║███████║██║  ██║    ██║   ██║██║██║  ██║█████╗  ██║   ██║
-# ██║  ██║██║   ██║██║███╗██║██║╚██╗██║██║     ██║   ██║██╔══██║██║  ██║    ╚██╗ ██╔╝██║██║  ██║██╔══╝  ██║   ██║
-# ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║███████╗╚██████╔╝██║  ██║██████╔╝     ╚████╔╝ ██║██████╔╝███████╗╚██████╔╝
-# ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝       ╚═══╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝
-# pylint: enable=line-too-long
+# --- Run ffprobe ---
 
 
-async def _download_video_and_audio_source(
-        url: str,
-        tmpdir: str,
-        filename: str
-) -> tuple[str, str | None]:
-    """
-    Downloads the Reddit video and optional audio to temporary files
+async def _run_ffprobe(*args: str) -> str:
+    """Runs a ffprobe command asynchronously and returns stdout.
 
-    Parameters:
-        url (str): URL of the Reddit video
-        tmpdir (str): Path to a temporary directory for intermediate files
-        filename (str): Base filename to use for saved files
+    ffprobe is FFmpeg's inspection tool,
+    which is used to read information from a media file.
+
+    Args:
+        *args: ffprobe arguments.
 
     Returns:
-        tuple[str, str | None]: Paths to the downloaded video and audio files
-                                Audio path is None if no audio is found
+        The stdout output as a string.
+
+    Raises:
+        RuntimeError: If ffprobe exits with a non-zero return code.
     """
-    tmp_video_path = os.path.join(tmpdir, filename + "_video.mp4")
-    tmp_audio_path = os.path.join(tmpdir, filename + "_audio.mp4")
-
-    video_data = await aiohttp_client.download_bytes(url)
-    write_file(tmp_video_path, video_data)
-
-    audio_data = await aiohttp_client.download_bytes(url.split("DASH_")[0] + "DASH_AUDIO_128.mp4")
-
-    # --- Audio exist ---
-    if audio_data:
-        write_file(tmp_audio_path, audio_data)
-    else:
-        tmp_audio_path = None
-
-    return tmp_video_path, tmp_audio_path
-
-
-async def _merge_video_audio_in_one_file(
-        video_path: str,
-        audio_path: str | None,
-        output_path: str):
-    """
-    Merges video and optional audio into a single .mp4 file using FFmpeg
-
-    Parameters:
-        video_path (str): Path to the video file
-        audio_path (str | None): Path to the audio file, or None if no audio
-        output_path (str): Path for the merged output file
-    """
-    merge_cmd = ["ffmpeg", "-y", "-i", video_path]
-
-    if audio_path:
-        merge_cmd += [
-            "-i", audio_path,
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-map", "0:v:0",
-            "-map", "1:a:0"
-        ]
-    else:
-        merge_cmd += ["-c:v", "copy"]
-
-    merge_cmd.append(output_path)
-
     process = await asyncio.create_subprocess_exec(
-        *merge_cmd,
+        "ffprobe",
+        *args,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        stderr=asyncio.subprocess.PIPE,
     )
+
+    # Retrieve ffprobe process data (stdout) and errors (stderr)
+    stdout, stderr = await process.communicate()
+
+    if process.returncode != 0:
+        raise RuntimeError(f"ffprobe error: {stderr.decode()}")
+
+    return stdout.decode()
+
+
+# --- Download video ---
+
+
+async def _download_video_and_audio(
+    url: str,
+    tmpdir: str,
+    filename: str,
+) -> tuple[str, str | None]:
+    """Downloads Reddit video and audio to temporary files.
+
+    Reddit stores video and audio as separate DASH streams. The audio
+    URL is derived from the video URL by replacing the quality segment.
+
+    Args:
+        url: URL of the Reddit video stream.
+        tmpdir: Path to a temporary directory for intermediate files.
+        filename: Base filename (without extension) for saved files.
+
+    Returns:
+        A tuple of (video_path, audio_path). audio_path is None if
+        no valid audio stream is found.
+    """
+    video_path = os.path.join(tmpdir, filename + "_video.mp4")
+    audio_path = os.path.join(tmpdir, filename + "_audio.mp4")
+
+    # Download video bytes for manipulate its.
+    try:
+        async with aiohttp.ClientSession() as session:
+            resp = await session.get(url=url)
+            video_bytes = await resp.read()
+    except aiohttp.ClientError as e:
+        logging.error("Failed to download video %s: %s", url, e)
+
+    await files_utils.write_file(fp=video_path, data=video_bytes)
+
+    # The Reddit audio streams url.
+    audio_url = url.split("CMAF_")[0] + "CMAF_AUDIO_128.mp4"
+
+    # Audio is in a distinct file because Reddit store it in a separate streams.
+    try:
+        async with aiohttp.ClientSession() as session:
+            resp = await session.get(url=audio_url)
+            audio_bytes = await resp.read()
+    except aiohttp.ClientError as e:
+        logging.error("Failed to download audio %s: %s", audio_url, e)
+
+    # Return video and audio streams files.
+    if audio_bytes:
+        await files_utils.write_file(fp=audio_path, data=audio_bytes)
+        return video_path, audio_path
+
+    # Return only video streams file, no audio found.
+    return video_path, None
+
+
+# --- Merge video and audio streams ---
+
+
+async def _merge_video_audio(
+    video_path: str,
+    audio_path: str | None,
+    tmpdir: str,
+    filename: str,
+) -> str:
+    """Merges video and audio streams into a single MP4 file using FFmpeg.
+
+    Merging command ffmpeg args:
+        - "ffmpeg": FFMPEG executable.
+        - "-y": Suppress the output file.
+        - "-i video_path": Video_path is declared at the source file (index 0).
+        - "-i audio_path": Audio_path is declared at the source file (index 1).
+        - "-c:v copy": paste video flux
+        - "- c:a aac": re encode the audio flux in AAC. Because we need to make sure
+        the audio format is standardized.
+        - "-map 0:v:0": Explicite mapping of video flux index 0.
+        - "-map 0:a:0": Explicite mapping of audio flux index 1.
+        - "-movflags +faststart": Moves the MP4 metadata to the start of the file,
+        so Discord can start streaming before the full file is downloaded.
+        - merged_path": Path of the result file (output).
+
+    Args:
+        video_path: Path to the video file.
+        audio_path: Path to the audio file, or None if no audio.
+        tmpdir: Path to a temporary directory for intermediate files.
+        filename: Base filename (without extension) for saved files.
+
+    Raises:
+        RuntimeError: If FFmpeg exits with a non-zero return code.
+    """
+    merged_path = os.path.join(tmpdir, filename + "_merged.mp4")
+
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-i", video_path,
+        "-i", audio_path,
+        "-c:v", "copy",
+        "-c:a", "aac",
+        "-map", "0:v:0",
+        "-map", "1:a:0",
+        "-movflags", "+faststart",
+        merged_path,
+    ]
+
+    # Get all the command's arguments and retrieve result
+    process = await asyncio.create_subprocess_exec(
+        *cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    # Retrieve only the possibles errors.
     _, stderr = await process.communicate()
 
     if process.returncode != 0:
-        raise RuntimeError(f'FFmpeg merge error: {stderr.decode()}')
+        raise RuntimeError(f"FFmpeg merge error: {stderr.decode()}")
+
+    return merged_path
 
 
-# pylint: disable=line-too-long
-#  ██████╗ ██████╗ ███╗   ███╗██████╗ ██████╗ ███████╗███████╗███████╗    ██╗   ██╗██╗██████╗ ███████╗ ██████╗
-# ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██╔══██╗██╔════╝██╔════╝██╔════╝    ██║   ██║██║██╔══██╗██╔════╝██╔═══██╗
-# ██║     ██║   ██║██╔████╔██║██████╔╝██████╔╝█████╗  ███████╗███████╗    ██║   ██║██║██║  ██║█████╗  ██║   ██║
-# ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██╔══██╗██╔══╝  ╚════██║╚════██║    ╚██╗ ██╔╝██║██║  ██║██╔══╝  ██║   ██║
-# ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ██║  ██║███████╗███████║███████║     ╚████╔╝ ██║██████╔╝███████╗╚██████╔╝
-#  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝      ╚═══╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝
-# pylint: enable=line-too-long
+async def _has_audio_stream(
+        video_path: str,
+        audio_path: str | None,
+        tmpdir: str,
+        filename: str
+) -> str:
+    """Checks if audio file contains an audio stream.
 
+    If the audio_path exist and the file contain audio flux and/or is not corrupted,
+    call _merge_video_audio for merge video and audio streams in the same file.
+    If not, return the video flux
 
-def _get_video_duration(video_path: str) -> float:
-    """
-    Retrieves the duration of a video file using ffprobe
+    Command ffprobe args:
+        - "-v error": Log level set to error for avoid false positives
+        if a log contains the word "audio".
+        - "-select_streams a": Listen only audio flux (type a).
+        - "-show_entries stream=codec_type": extracts the value of the codec_type field
+        (such as "audio" or "video," depending on the stream).
+        - "-of default=noprint_wrappers=1:nokey=1": default output format but without
+        tags and only the brut value of the codec_type (so "audio" or "video").
+        - audio_path: the audio file to analyze.
 
-    Parameters:
-        video_path (str): Path to the video file
+    Args:
+        video_path: Path to the video file.
+        audio_path: Path to the audio file, or None if no audio.
+        tmpdir: Path to a temporary directory for intermediate files.
+        filename: Base filename (without extension) for saved files.
 
     Returns:
-        float: Video duration in seconds
+        True if an audio stream is detected, False otherwise.
     """
-    result = subprocess.run(
-        [
-            "ffprobe",
+    if audio_path is not None:
+        stdout = await _run_ffprobe(
             "-v", "error",
-            "-select_streams", "v:0",
-            "-show_entries", "format=duration",
+            "-select_streams", "a",
+            "-show_entries", "stream=codec_type",
             "-of", "default=noprint_wrappers=1:nokey=1",
-            video_path
-        ],
-        capture_output=True, text=True, check=True
+            audio_path,
+        )
+
+        has_audio = "audio" in stdout
+
+        if has_audio:
+            return await _merge_video_audio(
+                video_path=video_path,
+                audio_path=audio_path,
+                tmpdir=tmpdir,
+                filename=filename,
+            )
+
+    return video_path
+
+
+# --- Compress video ---
+
+
+async def _get_video_duration(video_path: str) -> float:
+    """Retrieves the duration of a video file using ffprobe.
+
+    Command ffprobe args:
+        - "-v error": Log level set to error for avoid false positives
+        if a log contains the word "audio".
+        - "-select_streams v:0": Listen only video flux (type v).
+        - "-show_entries format=duration": extracts the value of the duration field
+        - "-of default=noprint_wrappers=1:nokey=1": default output format but without
+        tags and only the brut value of the duration field (in secondes).
+        - video_path: the video file to analyze.
+
+    Args:
+        video_path: Path to the video file.
+
+    Returns:
+        Video duration in seconds.
+
+    Raises:
+        RuntimeError: If the duration cannot be parsed.
+    """
+    stdout = await _run_ffprobe(
+        "-v", "error",
+        "-select_streams", "v:0",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        video_path,
     )
 
     try:
-        return float(result.stdout.strip())
-
+        return float(stdout.strip())
     except ValueError as e:
-        raise RuntimeError(f"Failed to parse video duration: {result.stdout}") from e
+        raise RuntimeError(f"Failed to parse video duration: {stdout}") from e
 
 
 async def _compress_video(
-        input_path: str,
-        output_path: str,
-        filesize_limit: int):
-    """
-    Compresses a video using FFmpeg to a target bitrate and scales to 1280px width
+    input_path: str,
+    tmpdir: str,
+    filename: str,
+    filesize_limit: int,
+) -> str:
+    """Compresses a video to fit within a target file size using FFmpeg.
 
-    Parameters:
-        input_path (str): Path to the input video
-        output_path (str): Path for the compressed output
-        filesize_limit (int): Guild filesize limit
-    """
-    # Calcul the target video bitrate
-    duration = _get_video_duration(video_path=input_path)
-    audio_bitrate_bps = 128_000
-    target_total_bitrate_bps = int((filesize_limit * 8) / duration)
-    target_video_bitrate_bps = max(10_000, target_total_bitrate_bps - audio_bitrate_bps)
+    Computes the target bitrate from the file size limit and video
+    duration, then re-encodes with libx264 scaled to 1280px width.
 
-    compress_cmd = [
+    Compress command ffmpeg args:
+        - "ffmpeg": FFMPEG executable.
+        - "-y": Suppress the output file without confirmation.
+        - "-i input_path": video path is declared at the source file (index 0).
+        - "-c:v libx264": H.264 codex, for compress the video.
+        - "-b:v str(target_video_bps)": Bitrate cible of the video.
+        - "-preset _FFMPEG_PRESET": Apply the ffmpeg encodage preset.
+        - "-vf scale=slow:-2": (video filter) Rescale the video.
+        - "- c:a aac": re encode the audio flux in AAC. Because we need to make sure
+        the audio format is standardized.
+        - "-b:a, _AUDIO_BITRATE_K": Re encode the audio à 128k.
+        - compress_path: Output file.
+
+    Args:
+        input_path: Path to the input video.
+        tmpdir: Path to a temporary directory for intermediate files.
+        filename: Base filename (without extension) for saved files.
+        filesize_limit: Maximum allowed file size in bytes.
+
+    Raises:
+        RuntimeError: If FFmpeg exits with a non-zero return code.
+    """
+    compressed_path = os.path.join(tmpdir, filename + "_compressed.mp4")
+
+    video_duration = await _get_video_duration(video_path=input_path)
+
+    # Retrieve total target bps (video and audio).
+    target_total_bps = int((filesize_limit * 8) / video_duration)
+
+    # Allow audio bitrate
+    audio_bitrate_bps = min(128000, int(target_total_bps * 0.2))
+    audio_bitrate_bps = max(audio_bitrate_bps, 64_000)
+    audio_bitrate_k = f"{audio_bitrate_bps // 1000}k"
+
+    # Retrieve the video target bps (without the bps allowed to the audio).
+    target_video_bps = max(
+        10000,
+        target_total_bps - audio_bitrate_bps,
+    )
+
+    cmd = [
         "ffmpeg",
         "-y",
         "-i", input_path,
         "-c:v", "libx264",
-        "-b:v", str(int(target_video_bitrate_bps)),
-        "-preset", "fast",
-        "-vf", "scale=1280:-2",
+        "-b:v", str(target_video_bps),
+        "-preset", "slow",
+        "-vf", "scale='min(1280, iw)':-2",
         "-c:a", "aac",
-        "-b:a", "128k",
-        output_path
+        "-b:a", audio_bitrate_k,
+        compressed_path,
     ]
 
-    compress_process = await asyncio.create_subprocess_exec(
-        *compress_cmd,
+    # Get all the command's arguments and retrieve result
+    process = await asyncio.create_subprocess_exec(
+        *cmd,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        stderr=asyncio.subprocess.PIPE,
     )
-    _, compress_stderr = await compress_process.communicate()
 
-    if compress_process.returncode != 0:
-        raise RuntimeError(f'FFmpeg compress error: {compress_stderr.decode()}')
+    # Retrieve only the possibles errors.
+    _, stderr = await process.communicate()
+
+    if process.returncode != 0:
+        raise RuntimeError(f"FFmpeg compress error: {stderr.decode()}")
+
+    return compressed_path
 
 
-# ███████╗██╗███╗   ██╗ █████╗ ██╗         ██╗   ██╗██╗██████╗ ███████╗ ██████╗
-# ██╔════╝██║████╗  ██║██╔══██╗██║         ██║   ██║██║██╔══██╗██╔════╝██╔═══██╗
-# █████╗  ██║██╔██╗ ██║███████║██║         ██║   ██║██║██║  ██║█████╗  ██║   ██║
-# ██╔══╝  ██║██║╚██╗██║██╔══██║██║         ╚██╗ ██╔╝██║██║  ██║██╔══╝  ██║   ██║
-# ██║     ██║██║ ╚████║██║  ██║███████╗     ╚████╔╝ ██║██████╔╝███████╗╚██████╔╝
-# ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝      ╚═══╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝
+# --- Return Reddit video ---
 
 
 async def get_video(
-        url: str,
-        filename: str,
-        file_size_limit: int) -> discord.File | None:
-    """
-    Downloads, merges, and compresses a Reddit video to fit under a file size limit
+    url: str,
+    file_size_limit: int,
+) -> discord.File | None:
+    """Downloads, merges video and audio and compresses (if necessary)
+    a Reddit video to fit Discord's limit.
 
-    Parameters:
-        url (str): URL of the Reddit video
-        filename (str): Base filename without extension
-        file_size_limit (int): Maximum allowed file size in bytes
+    If the file size exceeds the guild's filesize limit, compresses it to fit.
+
+    Args:
+        url: URL of the Reddit video stream.
+        file_size_limit: Maximum allowed file size in bytes.
 
     Returns:
-        discord.File | None: Discord file object with the merged/compressed video
-                             or None if something fails
+        A discord.File ready to upload, or None if processing fails.
     """
-    filename_without_ext = Path(filename).stem
+    filename = (
+        strings_utils.get_string_segment(string=url, split_char="/", i=2)
+        or "video.mp4"
+    )
 
+    # Stem retrieve the filename without its extension.
+    # We need the filename without its extension later,
+    # so we can merge the video with its audio while keeping the original filename.
+    filename_without_extension = Path(filename).stem
+
+    # Create a temporary directory for manipulate the Reddit video and audio.
     with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_out_path = os.path.join(tmpdir, filename_without_ext + "_merged.mp4")
+        try:
+            video_path, audio_path = await _download_video_and_audio(
+                url=url,
+                tmpdir=tmpdir,
+                filename=filename_without_extension,
+            )
 
-        video_path, audio_path = await _download_video_and_audio_source(
-            url=url,
-            tmpdir=tmpdir,
-            filename=filename
-        )
+            merged_path = await _has_audio_stream(
+                video_path=video_path,
+                audio_path=audio_path,
+                tmpdir=tmpdir,
+                filename=filename_without_extension,
+            )
 
-        await _merge_video_audio_in_one_file(
-            video_path=video_path,
-            audio_path=audio_path,
-            output_path=tmp_out_path
-        )
+            if os.path.getsize(merged_path) <= file_size_limit:
+                original_video = await files_utils.load_file(fp=merged_path)
+                return discord.File(fp=io.BytesIO(original_video), filename=filename)
 
-        # --- Return video if under filesize limit ---
-        if os.path.getsize(tmp_out_path) <= file_size_limit:
-            video = load_file(file_path=tmp_out_path, mode="rb")
-            return await create_discord_file(data=video, filename=filename)
+            compressed_path = await _compress_video(
+                input_path=merged_path,
+                tmpdir=tmpdir,
+                filename=filename_without_extension,
+                filesize_limit=file_size_limit,
+            )
 
-        # --- Otherwise compress video ---
-        tmp_compressed_path = os.path.join(tmpdir, filename_without_ext + "_compressed.mp4")
-
-        await _compress_video(
-            input_path=tmp_out_path,
-            output_path=tmp_compressed_path,
-            filesize_limit=file_size_limit
-        )
-
-        compressed_video = load_file(file_path=tmp_compressed_path, mode="rb")
-        return await create_discord_file(data=compressed_video, filename=filename)
+            compressed_video = await files_utils.load_file(fp=compressed_path)
+            return discord.File(fp=io.BytesIO(compressed_video), filename=filename)
+        except RuntimeError as e:
+            logging.error("Failed to process video from %s: %s", url, e)
+            return None

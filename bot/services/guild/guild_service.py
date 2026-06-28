@@ -1,54 +1,122 @@
-"""
-bot/services/guild_service.py
+"""Guild service for guild cog.
+
+Manage logics functions for guild logging messages, welcome and goodbye messages.
+
 © by hassanpacary
-
-Utility functions for multiples guild functions
 """
 
-# --- Imports ---
-import random
+# --- Forward references ---
+from __future__ import annotations
 
-# --- Third party imports ---
+# --- Standard library ---
+import random
+from typing import TYPE_CHECKING
+
+# --- Third-party ---
 import discord
 
-# --- Bot modules ---
-from bot.core.config_loader import BOT, STRINGS
-from bot.utils.discord_utils import send_message_in_channel
+# --- Internal ---
+from bot.config import bot_config, colors_config
+from bot.cogs.core import core_strings
+from bot.cogs.guild import guild_strings
+from bot.utils import discord_utils
+
+if TYPE_CHECKING:
+    from bot.core import bot as b
 
 
-# pylint: disable=line-too-long
-#  ██████╗ ██╗   ██╗██╗██╗     ██████╗     ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗███████╗
-# ██╔════╝ ██║   ██║██║██║     ██╔══██╗    ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝██╔════╝
-# ██║  ███╗██║   ██║██║██║     ██║  ██║    ███████╗█████╗  ██████╔╝██║   ██║██║██║     █████╗  ███████╗
-# ██║   ██║██║   ██║██║██║     ██║  ██║    ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║██║     ██╔══╝  ╚════██║
-# ╚██████╔╝╚██████╔╝██║███████╗██████╔╝    ███████║███████╗██║  ██║ ╚████╔╝ ██║╚██████╗███████╗███████║
-#  ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝     ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝╚══════╝
-# pylint: enable=line-too-long
+async def log_deleted_message(
+        bot: b.Bot,
+        message: discord.Message,
+) -> None:
+    """Logs a deleted message as an embed in the log channel.
 
+    Args:
+        bot: The Discord bot instance.
+        message: The deleted Discord message.
+    """
+    icon = discord_utils.get_guild_icon(bot=bot, guild=None)
 
-async def welcome_new_member(member: discord.Member):
-    """Welcoming a new member"""
-    channel_id = BOT['channels']['welcome']
-    message = random.choice(
-        STRINGS['guild']['event_component']['welcome_member'].format(member=member.mention)
+    embed = await discord_utils.create_discord_embed(
+        color=discord.Color(int(colors_config.RED, 16)),
+        title=message.author.name,
+        description=message.content,
+        date=message.created_at,
+        author=guild_strings.Logs.DELETED_MESSAGE,
+        icon=icon,
+        thumbnail_url=str(message.author.display_avatar.url),
+        footer_text=core_strings.GUILD_NAME,
     )
 
-    await send_message_in_channel(
-        ctx=member,
-        channel_id=channel_id,
-        content=message
+    channel = await discord_utils.get_channel_by_ctx(
+        ctx=bot,
+        channel_id=bot_config.ChannelsId.LOGS,
+    )
+    await channel.send(embed=embed)
+
+
+async def log_edited_message(
+        bot: b.Bot,
+        message_before: discord.Message,
+        message_after: discord.Message,
+) -> None:
+    """Logs an edited message as an embed in the log channel.
+
+    Args:
+        bot: The Discord bot instance.
+        message_before: The message content before the edit.
+        message_after: The message content after the edit.
+    """
+    icon = discord_utils.get_guild_icon(bot=bot, guild=None)
+
+    embed = await discord_utils.create_discord_embed(
+        color=discord.Color(int(colors_config.RED, 16)),
+        title=message_before.author.name,
+        description=message_before.content,
+        date=message_before.created_at,
+        author=guild_strings.Logs.EDITED_MESSAGE,
+        icon=icon,
+        fields=[
+            (guild_strings.Logs.NEW_MESSAGE_FIELD, message_after.content),
+        ],
+        thumbnail_url=str(message_before.author.display_avatar.url),
+        footer_text=core_strings.GUILD_NAME,
+    )
+
+    channel = await discord_utils.get_channel_by_ctx(
+        ctx=bot,
+        channel_id=bot_config.ChannelsId.LOGS,
+    )
+    await channel.send(embed=embed)
+
+
+async def welcome(bot: b.Bot, user: discord.User) -> None:
+    """Sends a random welcome message when a new user joins the server.
+
+    Args:
+        bot: The Discord bot instance.
+        user: The Discord user who joined the guild.
+    """
+    channel = await discord_utils.get_channel_by_ctx(
+        ctx=bot,
+        channel_id=bot_config.ChannelsId.WELCOME,
+    )
+    await channel.send(
+        content=random.choice(guild_strings.WELCOME_MESSAGES).format(user=user.mention),
     )
 
 
-async def goodbye_former_member(member: discord.Member):
-    """Goodbye to a former member"""
-    channel_id = BOT['channels']['goodbye']
-    message = random.choice(
-        STRINGS['guild']['event_component']['goodbye_member'].format(member=member.mention)
-    )
+async def goodbye(bot: b.Bot, user: discord.User) -> None:
+    """Sends a random goodbye message when a user leaves the server.
 
-    await send_message_in_channel(
-        ctx=member,
-        channel_id=channel_id,
-        content=message
+    Args:
+        bot: The Discord bot instance.
+        user: The Discord user who left the guild.
+    """
+    channel = await discord_utils.get_channel_by_ctx(
+        ctx=bot,
+        channel_id=bot_config.ChannelsId.GOODBYE,
+    )
+    await channel.send(
+        content=random.choice(guild_strings.GOODBYE_MESSAGES).format(user=user.mention),
     )

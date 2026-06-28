@@ -1,150 +1,89 @@
-"""
-bot/utils/files_utils.py
+"""Files utilities functions.
+
+Manage utilities functions for multiples files operations.
+Like load and write safe functions for bytes files.
+And load and write safe functions for JSON files.
+All functions log errors and return safe defaults on failure rather
+
 © by hassanpacary
-
-Files manipulations
 """
 
-# --- Imports ---
-import os
-import logging
+# --- Standard library ---
 import json
-
-# --- Third party imports ---
-import yaml
-
-
-# ██╗      ██████╗  █████╗ ██████╗     ███████╗██╗██╗     ███████╗
-# ██║     ██╔═══██╗██╔══██╗██╔══██╗    ██╔════╝██║██║     ██╔════╝
-# ██║     ██║   ██║███████║██║  ██║    █████╗  ██║██║     █████╗
-# ██║     ██║   ██║██╔══██║██║  ██║    ██╔══╝  ██║██║     ██╔══╝
-# ███████╗╚██████╔╝██║  ██║██████╔╝    ██║     ██║███████╗███████╗
-# ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝     ╚═╝     ╚═╝╚══════╝╚══════╝
+import logging
+from pathlib import Path
 
 
-def load_file(file_path: str, mode: str) -> str | bytes:
-    """
-    Load a text file safely and return its content
+async def load_file(fp: str) -> bytes:
+    """Reads a file and returns its Bytes content.
 
-    Parameters:
-        file_path (str): Path to the file
-        mode (str): File mode
+    Args:
+        fp: Path to the file, relative to the project root.
 
     Returns:
-        str: File content, or empty string if error occurs
+        The file content as bytes or null bytes string on failure.
     """
-    if not os.path.exists(file_path):
-        logging.error("File not found: %s", file_path)
-        return ""
-
-    # --- Read the file and return it ---
     try:
-        with open(file_path, mode, encoding='utf-8' if mode == "r" else None) as f:
+        with open(file=fp, mode="rb") as f:
             return f.read()
-
     except OSError as e:
-        logging.error("Error reading %s.\n%s", file_path, e)
-        return ""
+        logging.error("Error reading %s: %s", fp, e)
+        return b""
 
 
-# ██╗    ██╗██████╗ ██╗████████╗███████╗
-# ██║    ██║██╔══██╗██║╚══██╔══╝██╔════╝
-# ██║ █╗ ██║██████╔╝██║   ██║   █████╗
-# ██║███╗██║██╔══██╗██║   ██║   ██╔══╝
-# ╚███╔███╔╝██║  ██║██║   ██║   ███████╗
-#  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝   ╚═╝   ╚══════╝
+async def load_json(fp: Path) -> dict:
+    """Reads JSON file and returns its content.
 
-
-def write_file(file_path: str, data: bytes) -> bool:
-    """
-    Safely write raw bytes to a file
-
-    Parameters:
-        file_path (str): Path to the file where data should be written
-        data (bytes): The binary content to write
+    Args:
+        fp: Path to the JSON file, relative to the project root.
 
     Returns:
-        bool: True if the file was written successfully, False otherwise
+        The parsed JSON content as a dict, or an empty dict on error.
     """
-    # --- Try writing the file ---
     try:
-        with open(file_path, "wb") as f:
+        return json.loads(fp.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        logging.error("Deals list file not found: %s", fp)
+        return {}
+    except json.JSONDecodeError as e:
+        logging.error("Failed to parse deals list file: %s", e)
+        return {}
+
+
+async def write_file(fp: str, data: bytes) -> bool:
+    """Writes raw bytes to a file.
+
+    Args:
+        fp: Absolute or relative path to the output file.
+        data: The binary content to write.
+
+    Returns:
+        True if write succeeded, False otherwise.
+    """
+    try:
+        with open(fp, "wb") as f:
             f.write(data)
         return True
-
     except OSError as e:
-        logging.error("Error writing %s.\n%s", file_path, e)
+        logging.error("Error writing bytes to %s: %s", fp, e)
         return False
 
 
-def write_json(file_path: str, data: dict|list) -> bool:
+async def write_json(fp: Path, data: dict | list) -> None:
+    """Writes data to a JSON file.
+
+    Args:
+        fp: Path to the JSON file, relative to the project root.
+        data: The dict data to write. Must be JSON-serializable.
+
+    Raises:
+        OSError: If writing fails.
+        TypeError: If data is not JSON serializable.
     """
-    Safely write data to a JSON file.
-
-    Parameters:
-        file_path (str): Path to the JSON file where data should be written.
-        data (Any): The data to serialize and write (dict, list, etc.).
-
-    Returns:
-        bool: True if the file was written successfully, False otherwise.
-    """
-
-    # --- Try writing the json file ---
     try:
-        with open(file_path, "w", encoding="utf-8") as f:
+        with open(fp, "w", encoding="utf-8") as f:
             json.dump(data, f)
-        return True
-
     except OSError as e:
-        logging.error("Error writing JSON to %s.\n%s", file_path, e)
-        return False
-
-
-#      ██╗███████╗ ██████╗ ███╗   ██╗    ███████╗██╗██╗     ███████╗
-#      ██║██╔════╝██╔═══██╗████╗  ██║    ██╔════╝██║██║     ██╔════╝
-#      ██║███████╗██║   ██║██╔██╗ ██║    █████╗  ██║██║     █████╗
-# ██   ██║╚════██║██║   ██║██║╚██╗██║    ██╔══╝  ██║██║     ██╔══╝
-# ╚█████╔╝███████║╚██████╔╝██║ ╚████║    ██║     ██║███████╗███████╗
-#  ╚════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═╝     ╚═╝╚══════╝╚══════╝
-
-
-def load_json(file_path: str) -> dict:
-    """Load a JSON file using the generic load_file function"""
-    content = load_file(file_path, "r")
-
-    # --- The file is empty ---
-    if not content:
-        return {}
-
-    # --- Return json content of the file ---
-    try:
-        return json.loads(content)
-
-    except json.JSONDecodeError as e:
-        logging.error("Failed to decode JSON.\n%s", e)
-        return {}
-
-
-# ██╗   ██╗ █████╗ ███╗   ███╗██╗         ███████╗██╗██╗     ███████╗
-# ╚██╗ ██╔╝██╔══██╗████╗ ████║██║         ██╔════╝██║██║     ██╔════╝
-#  ╚████╔╝ ███████║██╔████╔██║██║         █████╗  ██║██║     █████╗
-#   ╚██╔╝  ██╔══██║██║╚██╔╝██║██║         ██╔══╝  ██║██║     ██╔══╝
-#    ██║   ██║  ██║██║ ╚═╝ ██║███████╗    ██║     ██║███████╗███████╗
-#    ╚═╝   ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝    ╚═╝     ╚═╝╚══════╝╚══════╝
-
-
-def load_yaml(file_path: str) -> dict:
-    """Load a YAML file using the generic load_file function"""
-    content = load_file(file_path, "r")
-
-    # --- The file is empty ---
-    if not content:
-        return {}
-
-    # --- Return yaml content of the file ---
-    try:
-        return yaml.safe_load(content)
-
-    except yaml.YAMLError as e:
-        logging.error("Failed to decode YAML.\n%s", e)
-        return {}
+        logging.error("Error writing JSON to %s: %s", fp, e)
+    except TypeError as e:
+        logging.error("Data is not JSON serializable: %s", e)

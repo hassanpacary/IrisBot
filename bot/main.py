@@ -1,60 +1,52 @@
-"""
-bot/main.py
+"""Entrypoint of the Discord bot.
+
+Initializes logging, loads environment variables, starts the bot,
+and ensures clean shutdown of all async resources on exit.
+
 © by hassanpacary
-
-Entrypoint of the Discord bot
 """
 
-# --- Imports ---
+
+# --- Standard library ---
 import asyncio
 import logging
 
-# --- Bot modules ---
-from bot.core.config_loader import RUN_BANNER, INTERUPT_BANNER
-from bot.core.setup_bot import Bot
-from bot.core.environment import load_env, get_env_var
+# --- Internal ---
+from bot.core import bot as b, environment
 from bot.core.setup_logging import setup_logging
-from bot.utils.aiohttp_client import aiohttp_shutdown
 
 
-# ███╗   ███╗ █████╗ ██╗███╗   ██╗
-# ████╗ ████║██╔══██╗██║████╗  ██║
-# ██╔████╔██║███████║██║██╔██╗ ██║
-# ██║╚██╔╝██║██╔══██║██║██║╚██╗██║
-# ██║ ╚═╝ ██║██║  ██║██║██║ ╚████║
-# ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
+async def _run() -> None:
+    """Initializes and starts the Discord bot.
 
-
-async def run() -> None:
-    """Initialize and start the Discord bot"""
-    load_env()
-    bot = Bot()
+    Ensures that bot connection are closed cleanly even if an exception
+    occurs during startup or runtime.
+    """
+    environment.load_env()
+    bot = b.Bot()
 
     try:
-        await bot.start(get_env_var("DISCORD_TOKEN"))
+        await bot.start(environment.get_env_var("DISCORD_TOKEN"))
     finally:
-        await aiohttp_shutdown()
         await bot.close()
 
 
-def main() -> None:
-    """Main func. Setup logging config and run the Discord bot"""
+def _main() -> None:
+    """Sets up logging and runs the bot event loop.
+
+    Raises:
+        KeyboardInterrupt: Graceful manual stop.
+        OSError: Fatal system-level failures.
+    """
     setup_logging()
-    logging.info(RUN_BANNER)
 
     try:
-        asyncio.run(run())
-
+        asyncio.run(_run())
     except KeyboardInterrupt:
-        logging.info("-- Bot stopped manually.")
-        logging.info(INTERUPT_BANNER)
-
+        logging.info("Bot stopped manually")
     except OSError as e:
-        logging.critical("Erreur OS : %s", e, exc_info=True)
-
-    except asyncio.CancelledError:
-        logging.info("Tâches annulées proprement.")
+        logging.critical("OS error: %s", e, exc_info=True)
 
 
 if __name__ == "__main__":
-    main()
+    _main()

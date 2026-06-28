@@ -1,116 +1,57 @@
-"""
-bot/utils/strings_utils.py
+"""Strings utilities functions.
+
+Manage utilities functions for strings manipulation.
+Like segmentation of the string.
+
 © by hassanpacary
-
-String manipulation, formatting, and parsing.
 """
 
-# --- Imports ---
+# --- Standard library ---
 import re
 from urllib.parse import urlparse
 
 
-# ██████╗ ███████╗ ██████╗ ███████╗██╗  ██╗
-# ██╔══██╗██╔════╝██╔════╝ ██╔════╝╚██╗██╔╝
-# ██████╔╝█████╗  ██║  ███╗█████╗   ╚███╔╝
-# ██╔══██╗██╔══╝  ██║   ██║██╔══╝   ██╔██╗
-# ██║  ██║███████╗╚██████╔╝███████╗██╔╝ ██╗
-# ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
+def get_all_string_segments(string: str, split_regex: str) -> dict[str, str]:
+    """Extracts all named segments from a string split by a regex pattern.
 
+    Designed for parsing SQL files annotated with `-- name: <query_name>`
+    comments. The regex must produce alternating (name, content) groups
+    when splitting.
 
-def matches_pattern(pattern: str, text: str, ) -> bool:
-    """
-    Check if a string matches a given regex pattern
-
-    Parameters:
-        text (str): The string to test
-        pattern (str): The regex pattern to match against
+    Args:
+        string: The full string to parse (e.g. a .sql file content).
+        split_regex: A regex pattern whose capture group matches the segment name.
 
     Returns:
-        bool: True if the string matches the pattern, False otherwise
-    """
-    return bool(re.match(pattern, text))
-
-
-def regex_search(pattern: str, text: str) -> str | None:
-    """
-    Search for a regex pattern in a string and return the matched text
-
-    Parameters:
-        pattern (str): Regex pattern as a string
-        text (str): Text to search in
-
-    Returns:
-        str | None: The matched string, or None if no match is found
-    """
-    match = re.search(pattern, text)
-    return match.group(0) if match else None
-
-
-#  ██████╗██╗     ███████╗ █████╗ ███╗   ██╗
-# ██╔════╝██║     ██╔════╝██╔══██╗████╗  ██║
-# ██║     ██║     █████╗  ███████║██╔██╗ ██║
-# ██║     ██║     ██╔══╝  ██╔══██║██║╚██╗██║
-# ╚██████╗███████╗███████╗██║  ██║██║ ╚████║
-#  ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝
-
-
-def sanitize_text(text: str) -> str:
-    """
-    Remove all non-alphanumeric characters (except spaces) from a string
-
-    Parameters:
-        text (str): Input string to sanitize
-
-    Returns:
-        str: Sanitized string containing only letters, numbers, and spaces
-    """
-    return re.sub(r'[^a-zA-Z0-9\s]', '', text)
-
-
-# ███████╗███████╗ ██████╗ ███╗   ███╗███████╗███╗   ██╗████████╗
-# ██╔════╝██╔════╝██╔════╝ ████╗ ████║██╔════╝████╗  ██║╚══██╔══╝
-# ███████╗█████╗  ██║  ███╗██╔████╔██║█████╗  ██╔██╗ ██║   ██║
-# ╚════██║██╔══╝  ██║   ██║██║╚██╔╝██║██╔══╝  ██║╚██╗██║   ██║
-# ███████║███████╗╚██████╔╝██║ ╚═╝ ██║███████╗██║ ╚████║   ██║
-# ╚══════╝╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝
-
-
-def get_string_segment(string: str, split_char: str, i: int) -> str | None:
-    """
-    Extract a specific segment from a string
-
-    Parameters:
-        string (str): The string to parse
-        split_char (str): The character used to split the string
-        i (int): The index of the path segment to retrieve (0-based)
-
-    Returns:
-        str | None: The segment at the given index, or None if it doesn't exist
-    """
-    path_segments = urlparse(string).path.split(split_char)
-
-    if 0 <= i < len(path_segments):
-        return path_segments[i]
-    return None
-
-
-def get_string_segments(string: str, split_regex: str) -> dict[str, str]:
-    """
-    Extract all segments from a string
-
-    Parameters:
-        string (str): The string to parse
-        split_regex (str): The regex pattern to match against ffor the split
-
-    Returns:
-        dict[str, str]: All segments in the string
+        A dict mapping each segment name to its content string.
     """
     segments: dict[str, str] = {}
     parts = re.split(split_regex, string)
 
     for i in range(1, len(parts), 2):
-        name, query = parts[i], parts[i + 1].strip()
-        segments[name] = query
+        name = parts[i]
+        content = parts[i + 1].strip()
+        segments[name] = content
 
     return segments
+
+
+def get_string_segment(string: str, split_char: str, i: int) -> str:
+    """Extracts a specific path segment from a URL or path string.
+
+    Parses the path component of the string and returns the segment
+    at the given index after splitting on split_char.
+
+    Args:
+        string: The URL or path string to extract from.
+        split_char: The character to split the path on.
+        i: The index of the segment to extract. Supports negative indexing.
+
+    Returns:
+        The segment at index i, or None if the index is out of range.
+    """
+    segments = urlparse(string).path.split(split_char)
+
+    if -len(segments) <= i < len(segments):
+        return segments[i]
+    return ""

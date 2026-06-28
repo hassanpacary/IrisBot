@@ -1,222 +1,152 @@
-"""
-bot/utils/discord_utils.py
+"""Discord utilities functions.
+
+Manage utilities functions for build a Discord embed, get bot icon and
+get channel by is context.
+
 © by hassanpacary
-
-Utility functions for discord.
 """
 
-# --- Imports ---
+# --- Standard library ---
 from datetime import datetime
-import io
-import logging
+from typing import cast
 
-# --- Third party imports ---
+# --- Third-party ---
 import discord
 from discord.ext import commands
 from discord.utils import MISSING
 
-# --- Bot modules
-from bot.utils.strings_utils import get_string_segment
 
-
-# pylint: disable=line-too-long
-# ██████╗ ███████╗███████╗██████╗  ██████╗ ███╗   ██╗███████╗███████╗     ██████╗ ██████╗ ███╗   ██╗███████╗████████╗██████╗ ██╗   ██╗ ██████╗████████╗ ██████╗ ██████╗
-# ██╔══██╗██╔════╝██╔════╝██╔══██╗██╔═══██╗████╗  ██║██╔════╝██╔════╝    ██╔════╝██╔═══██╗████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║   ██║██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗
-# ██████╔╝█████╗  ███████╗██████╔╝██║   ██║██╔██╗ ██║███████╗█████╗      ██║     ██║   ██║██╔██╗ ██║███████╗   ██║   ██████╔╝██║   ██║██║        ██║   ██║   ██║██████╔╝
-# ██╔══██╗██╔══╝  ╚════██║██╔═══╝ ██║   ██║██║╚██╗██║╚════██║██╔══╝      ██║     ██║   ██║██║╚██╗██║╚════██║   ██║   ██╔══██╗██║   ██║██║        ██║   ██║   ██║██╔══██╗
-# ██║  ██║███████╗███████║██║     ╚██████╔╝██║ ╚████║███████║███████╗    ╚██████╗╚██████╔╝██║ ╚████║███████║   ██║   ██║  ██║╚██████╔╝╚██████╗   ██║   ╚██████╔╝██║  ██║
-# ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚══════╝     ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝  ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
-# pylint: enable=line-too-long
-
-
-async def send_response_to_discord( # pylint: disable=too-many-arguments
-        *,
-        ctx: discord.Interaction | discord.Message,
-        content: str = MISSING,
-        files: list[discord.File] = MISSING,
-        embed: discord.Embed = MISSING,
-        view: discord.ui.View = MISSING,
-        ephemeral: bool = False,
-        detach: bool = False
-):
-    """
-    Send a response to either a Discord Message or an Interaction
-
-    Parameters:
-        ctx (discord.Message | Interaction): The message or interaction to respond to
-        content (str): The message text (optional)
-        files (list[discord.File]): The files to send
-        embed (discord.Embed): The embed to send
-        view (discord.View): The view to use
-        ephemeral (bool): Whether the response should be ephemeral (only works with interactions)
-        detach (bool): Whether the response should be detached (only works with interactions)
-    """
-    if files is None:
-        files = []
-
-    # --- Response to Slash command ---
-    if isinstance(ctx, discord.Interaction):
-
-        # If flag detach is true, send a simple message in the channel
-        if detach:
-            await ctx.channel.send(content=content, files=files, embed=embed, view=view)
-
-        # 2nd and all new response in the ctx
-        elif ctx.response.is_done():  # type: ignore
-            await ctx.followup.send(content=content, files=files, embed=embed, view=view, ephemeral=ephemeral)
-
-        # 1st response
-        else:
-            await ctx.response.send_message( # type: ignore
-                content=content,
-                files=files,
-                embed=embed,
-                view=view,
-                ephemeral=ephemeral
-            )
-
-    # --- Response to user message ---
-    elif isinstance(ctx, discord.Message):
-        await ctx.channel.send(content=content, files=files, embed=embed, view=view)
-
-    logging.info(
-        "-- Discord message has been sent: %s",
-        content
-    )
-
-
-async def send_message_in_channel(
-        ctx: commands.Bot | discord.Member | discord.Message,
-        channel_id: int = None,
-        content: str = None,
-        embed: discord.Embed = None,
-):
-    """
-        Send a message in a specific channel or system channel
-
-        Parameters:
-            ctx (discord.Message | Interaction): The message or interaction to respond to
-            channel_id (int): The channel to send to
-            content (str): The message text (optional)
-            embed (discord.Embed): The embed to send (optional)
-        """
-
-    # If a channel of message has been set up, we use this one
-    if channel_id:
-        system_channel_id = channel_id
-    else:
-        system_channel_id = ctx.guild.system_channel.id
-
-    if isinstance(ctx, commands.Bot):
-        channel = await ctx.fetch_channel(system_channel_id)
-    else:
-        channel = await ctx.guild.fetch_channel(system_channel_id)
-
-    await channel.send(content=content, embed=embed)
-
-
-# pylint: disable=line-too-long
-# ███████╗███╗   ███╗██████╗ ███████╗██████╗      ██████╗██████╗ ███████╗ █████╗ ████████╗ ██████╗ ██████╗
-# ██╔════╝████╗ ████║██╔══██╗██╔════╝██╔══██╗    ██╔════╝██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔═══██╗██╔══██╗
-# █████╗  ██╔████╔██║██████╔╝█████╗  ██║  ██║    ██║     ██████╔╝█████╗  ███████║   ██║   ██║   ██║██████╔╝
-# ██╔══╝  ██║╚██╔╝██║██╔══██╗██╔══╝  ██║  ██║    ██║     ██╔══██╗██╔══╝  ██╔══██║   ██║   ██║   ██║██╔══██╗
-# ███████╗██║ ╚═╝ ██║██████╔╝███████╗██████╔╝    ╚██████╗██║  ██║███████╗██║  ██║   ██║   ╚██████╔╝██║  ██║
-# ╚══════╝╚═╝     ╚═╝╚═════╝ ╚══════╝╚═════╝      ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
-# pylint: enable=line-too-long
-
-
-async def create_discord_embed( # pylint: disable=too-many-arguments
-        *,
-        color: discord.Color = discord.Color.blurple(),
-        title: str = None,
-        title_url: str = None,
-        description: str = None,
-        date: datetime = None,
-        author: str = None,
-        icon: str = None,
-        fields: list[tuple] = None,
-        fields_is_inline: bool = True,
-        thumbnail_url: str = None,
-        image_url: str = None,
-        footer_text: str = None,
-        footer_icon_url: str = None
+async def create_discord_embed(  # pylint: disable=too-many-arguments, too-many-locals
+    *,
+    color: discord.Color = discord.Color.blurple(),
+    title: str = MISSING,
+    title_url: str = MISSING,
+    description: str = MISSING,
+    date: datetime | None = None,
+    author: str = MISSING,
+    icon: str = MISSING,
+    fields: list[tuple[str, str]] = MISSING,
+    fields_is_inline: bool = True,
+    thumbnail_url: str = MISSING,
+    image_url: str | None = None,
+    footer_text: str = MISSING,
+    footer_icon_url: str = MISSING,
 ) -> discord.Embed:
-    """
-    Sends a Discord embed to either an Interaction or a Message
+    """Builds a Discord embed from the provided parameters.
 
-    Parameters:
-        color (discord.Color): Embed color
-        title (str): Embed title
-        title_url (str): Embed title URL
-        description (str): Embed description
-        date (datetime | None): Embed date
-        author (str): Embed author
-        icon (str): Embed icon
-        fields (list[dict]):
-                List of fields, each dict with 'name', 'value', 'inline' (optional, default True)
-        fields_is_inline (bool): Whether the fields should be inline
-        thumbnail_url (str): URL for the embed thumbnail
-        image_url (str): URL for the embed main image
-        footer_text (str): Footer text
-        footer_icon_url (str): Footer icon URL
+    Args:
+        color: Embed color. Defaults to blurple.
+        title: Embed title.
+        title_url: URL linked from the title.
+        description: Embed description text.
+        date: Timestamp shown in the footer. Defaults to now.
+        author: Author name shown at the top.
+        icon: Author icon URL.
+        fields: List of (name, value) tuples to add as fields.
+        fields_is_inline: Whether fields are displayed inline.
+            Defaults to True.
+        thumbnail_url: URL of the thumbnail image.
+        image_url: URL of the main embed image.
+        footer_text: Footer text.
+        footer_icon_url: Footer icon URL.
 
     Returns:
-        discord.Embed: The embed object
+        A fully constructed discord.Embed instance.
     """
     embed = discord.Embed(
         color=color,
-        title=title,
-        url=title_url,
-        description=description,
-        timestamp=date
+        title=title if title is not MISSING else None,
+        url=title_url if title_url is not MISSING else None,
+        description=description if description is not MISSING else None,
+        timestamp=date or datetime.now(),
     )
-    embed.set_author(name=author, icon_url=icon)
 
-    # Add fields if any
-    if fields:
+    if author is not MISSING:
+        embed.set_author(
+            name=author,
+            icon_url=icon if icon is not MISSING else None,
+        )
+
+    if fields is not MISSING:
         for field_name, field_value in fields:
             embed.add_field(
                 name=field_name,
                 value=field_value,
-                inline=fields_is_inline
+                inline=fields_is_inline,
             )
 
-    # Add thumbnail and image
-    if thumbnail_url:
+    if thumbnail_url is not MISSING:
         embed.set_thumbnail(url=thumbnail_url)
-    if image_url:
+
+    if image_url is not None:
         embed.set_image(url=image_url)
 
-    # Add footer
-    if footer_text:
-        embed.set_footer(text=footer_text, icon_url=footer_icon_url)
+    if footer_text is not MISSING:
+        embed.set_footer(
+            text=footer_text,
+            icon_url=footer_icon_url if footer_icon_url is not MISSING else None,
+        )
 
     return embed
 
 
-#  ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗    ███████╗██╗██╗     ███████╗
-# ██╔════╝██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔════╝    ██╔════╝██║██║     ██╔════╝
-# ██║     ██████╔╝█████╗  ███████║   ██║   █████╗      █████╗  ██║██║     █████╗
-# ██║     ██╔══██╗██╔══╝  ██╔══██║   ██║   ██╔══╝      ██╔══╝  ██║██║     ██╔══╝
-# ╚██████╗██║  ██║███████╗██║  ██║   ██║   ███████╗    ██║     ██║███████╗███████╗
-#  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝    ╚═╝     ╚═╝╚══════╝╚══════╝
+def get_bot_icon(bot: commands.Bot) -> str:
+    """Returns the bot's avatar URL, or MISSING if unavailable.
 
-
-async def create_discord_file(filename: str, data: bytes = None) -> discord.File:
-    """
-    Create a discord.File object from raw bytes
-
-    Parameters:
-        data (bytes): Raw file data
-        filename (str): Filename to assign to the file
+    Args:
+        bot: The Discord bot instance.
 
     Returns:
-        discord.File: A Discord-compatible file object
+        The bot avatar URL as a string, or MISSING.
     """
-    if data is None:
-        return discord.File(
-            filename,
-            filename=get_string_segment(string=filename, split_char="/", i=3)
+    bot_user = cast(discord.ClientUser, bot.user)
+    avatar = getattr(bot_user, "avatar", None)
+    return str(getattr(avatar, "url", MISSING)) if avatar else MISSING
+
+
+async def get_channel_by_ctx(
+    ctx: commands.Bot | discord.Message | discord.Interaction,
+    channel_id: int,
+) -> discord.TextChannel:
+    """Get the target channel from the guild, depending on the type of ctx provided.
+
+    Args:
+        ctx: The bot instance, a guild member, or a message.
+        channel_id: The ID of the channel to send the message to.
+
+    Raise:
+        ValueError: If the channel is impossible to retrieve.
+    """
+    if isinstance(ctx, commands.Bot):
+        channel = cast(discord.TextChannel, await ctx.fetch_channel(channel_id))
+    elif ctx.guild is not None:
+        guild = cast(discord.Guild, ctx.guild)
+        channel = cast(discord.TextChannel, await guild.fetch_channel(channel_id))
+    else:
+        raise ValueError(
+            f"Impossible to retrieve the discord TextChannel {channel_id}",
         )
 
-    return discord.File(io.BytesIO(data), filename=filename)
+    return channel
+
+
+def get_guild_icon(
+        bot: commands.Bot | None = None,
+        guild: discord.Guild | None = None,
+) -> str:
+    """Returns the guild icon URL, or MISSING if unavailable.
+
+    Args:
+        bot: The Discord bot instance.
+        guild: The Discord guild instance.
+
+    Returns:
+        The guild icon URL as a string, or MISSING.
+    """
+    if bot is not None:
+        guild = bot.guilds[0]
+        icon = getattr(guild, "icon", None)
+        return str(getattr(icon, "url", MISSING)) if icon else MISSING
+
+    icon = getattr(guild, "icon", None)
+    return str(getattr(icon, "url", MISSING)) if icon else MISSING

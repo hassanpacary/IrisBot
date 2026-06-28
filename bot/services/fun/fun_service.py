@@ -1,81 +1,87 @@
-"""
-bot/services/fun/fun_service.py
+"""Fun service for fun cog.
+
+Manage logics functions for quoi, roll and repeat commands.
+
 © by hassanpacary
-
-Utility functions for general fun cog
 """
 
-# --- Imports ---
+# --- Standard library ---
+import logging
 import random
 
-# --- Third party imports ---
+# --- Third-party ---
 import discord
+from discord import TextChannel
 
-# --- Bot modules ---
-from bot.core.config_loader import STRINGS
-from bot.utils.discord_utils import send_response_to_discord, send_message_in_channel
-
-
-# ██████╗  ██████╗ ██╗     ██╗
-# ██╔══██╗██╔═══██╗██║     ██║
-# ██████╔╝██║   ██║██║     ██║
-# ██╔══██╗██║   ██║██║     ██║
-# ██║  ██║╚██████╔╝███████╗███████╗
-# ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝
+# --- Internal ---
+from bot.cogs.fun import fun_strings
 
 
-async def roll_dice(ctx: discord.Interaction, sides: int):
-    """Logic of /roll command"""
-    random_number_1 = random.randint(1, sides)
-    random_number_2 = random_number_1
+async def handle_quoi_message(message: discord.Message) -> None:
+    """Replies 'feur' if the message content matches the 'quoi' pattern.
 
-    # As long as random_number_1 is equal to random_number_2, we rethrow it
-    while random_number_1 == random_number_2:
-        random_number_2 = random.randint(1, sides)
-
-    response = STRINGS['fun']['roll_result'].format(
-        first_result=random_number_1,
-        second_result=random_number_2
-    )
-
-    await send_response_to_discord(
-        ctx=ctx,
-        content=response,
+    Args:
+        message: The incoming Discord message to evaluate.
+    """
+    await message.channel.send(content=fun_strings.QUOI_RESPONSE)
+    logging.info(
+        "%s said: '%s' and matched with 'quoi' pattern.",
+        message.author,
+        message.content,
     )
 
 
-# ███████╗ █████╗ ██╗   ██╗
-# ██╔════╝██╔══██╗╚██╗ ██╔╝
-# ███████╗███████║ ╚████╔╝
-# ╚════██║██╔══██║  ╚██╔╝
-# ███████║██║  ██║   ██║
-# ╚══════╝╚═╝  ╚═╝   ╚═╝
+async def roll_dice(interaction: discord.Interaction, sides: int) -> None:
+    """Rolls dice with the given number of sides and replies with the results.
+
+    Args:
+        interaction: The Discord interaction context.
+        sides: Number of sides on each dice.
+    """
+    result = random.randint(1, sides)
+
+    await interaction.response.send_message(
+        content=fun_strings.ROLL_RESULT.format(result=result),
+    )
+
+    logging.info(
+        "%s rolled a %s-sided dice: %s",
+        interaction.user.name,
+        sides,
+        result,
+    )
 
 
-async def repeat_message(ctx: discord.Interaction, message: str):
-    """Logic of /say command"""
+async def repeat_message(
+    interaction: discord.Interaction,
+    message: str,
+) -> None:
+    """Repeats the given message in the channel as the bot.
+
+    Sends the message directly to the channel so it appears as if
+    the bot said it unprompted with 50% chance to disclose the command author.
+
+    Args:
+        interaction: The Discord interaction context.
+        message: The message string to repeat.
+    """
+    assert isinstance(interaction.channel, TextChannel)
+
+    await interaction.channel.send(content=message)
+
     random_swap = random.randint(0, 1)
-
-    await send_message_in_channel(
-        ctx=ctx.user,
-        channel_id=ctx.channel.id,
-        content=message
-    )
-
     if random_swap:
-        response = (
-            STRINGS['fun']['say_component']['message_repeat_with_success_sus'].format(
-                user=ctx.user.mention
-            )
-        )
-        await send_response_to_discord(
-            ctx=ctx,
-            content=response
+        await interaction.response.send_message(
+            content=fun_strings.Say.WITH_SOURCE.format(user=interaction.user.mention),
         )
     else:
-        response = STRINGS['fun']['say_component']['message_repeat_with_success']
-        await send_response_to_discord(
-            ctx=ctx,
-            content=response,
-            ephemeral=True
+        await interaction.response.send_message(
+            content=fun_strings.Say.WITH_SUCCESS,
+            ephemeral=True,
         )
+
+    logging.info(
+        "Message sends by %s repeat with success: %s",
+        interaction.user.name,
+        message,
+    )
