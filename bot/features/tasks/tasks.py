@@ -41,7 +41,7 @@ class TasksScheduler:
         """Starts all background tasks."""
         self.swap_activity_task.start()
         self.fest_end_task.start()
-        # self.check_deals_task.start()
+        self.check_deals_task.start()
 
     @tasks.loop(hours=1)
     async def check_deals_task(self) -> None:
